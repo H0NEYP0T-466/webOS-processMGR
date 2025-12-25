@@ -24,6 +24,7 @@ export function TaskManager() {
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const [selectedProcess, setSelectedProcess] = useState<number | string | null>(null);
+  const [confirmTerminate, setConfirmTerminate] = useState<number | null>(null);
   
   const { user, setSystemMetrics } = useOSStore();
   const isAdmin = user?.roles.includes('admin');
@@ -120,15 +121,19 @@ export function TaskManager() {
       return;
     }
 
-    if (!confirm(`Are you sure you want to terminate process ${pid}? This may cause system instability.`)) {
-      return;
-    }
+    setConfirmTerminate(pid);
+  };
 
+  const confirmTerminateProcess = async () => {
+    if (confirmTerminate === null) return;
+    
     try {
-      await api.terminateHostProcess(pid);
+      await api.terminateHostProcess(confirmTerminate);
       fetchHostProcesses();
     } catch (err) {
       setError(err instanceof Error ? err.message : 'Failed to terminate process');
+    } finally {
+      setConfirmTerminate(null);
     }
   };
 
@@ -276,6 +281,26 @@ export function TaskManager() {
           </>
         )}
       </div>
+
+      {/* Confirm Terminate Dialog */}
+      {confirmTerminate !== null && (
+        <div className="tm-dialog-overlay" onClick={() => setConfirmTerminate(null)}>
+          <motion.div 
+            className="tm-dialog"
+            initial={{ scale: 0.9, opacity: 0 }}
+            animate={{ scale: 1, opacity: 1 }}
+            onClick={e => e.stopPropagation()}
+          >
+            <h3>⚠️ Confirm Termination</h3>
+            <p>Are you sure you want to terminate process {confirmTerminate}?</p>
+            <p className="warning">This may cause system instability.</p>
+            <div className="tm-dialog-actions">
+              <button onClick={() => setConfirmTerminate(null)}>Cancel</button>
+              <button className="danger" onClick={confirmTerminateProcess}>Terminate</button>
+            </div>
+          </motion.div>
+        </div>
+      )}
     </div>
   );
 }

@@ -89,9 +89,13 @@ class WebSocketClient {
       this.reconnectAttempts++;
       console.log(`Attempting reconnect ${this.reconnectAttempts}/${this.maxReconnectAttempts}`);
       
+      // Capped exponential backoff: max 30 seconds
+      const maxDelay = 30000;
+      const delay = Math.min(this.reconnectDelay * Math.pow(2, this.reconnectAttempts - 1), maxDelay);
+      
       setTimeout(() => {
         this.connect().catch(console.error);
-      }, this.reconnectDelay * this.reconnectAttempts);
+      }, delay);
     }
   }
 

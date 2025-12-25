@@ -15,6 +15,13 @@ class TerminationDenied(Exception):
 # Critical PIDs that should never be terminated
 CRITICAL_PIDS = {0, 1}
 
+# Critical process names that should be protected
+CRITICAL_PROCESS_NAMES = {
+    'init', 'systemd', 'launchd', 'kernel', 'kthreadd',
+    'System', 'csrss', 'wininit', 'services', 'lsass',
+    'smss', 'svchost'
+}
+
 
 def list_processes() -> List[dict]:
     """List all running processes on the host system."""
@@ -111,6 +118,11 @@ def terminate_process(pid: int, by_user: str) -> bool:
     try:
         proc = psutil.Process(pid)
         proc_name = proc.name()
+        
+        # Check for critical process names
+        if proc_name.lower() in {name.lower() for name in CRITICAL_PROCESS_NAMES}:
+            warning_emoji("⚠️", f"Host process termination denied: pid={pid} name={proc_name} reason=critical process name")
+            raise TerminationDenied(f"Cannot terminate critical system process: {proc_name}")
         
         # Try graceful termination first
         proc.terminate()

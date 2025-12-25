@@ -131,7 +131,22 @@ export const useOSStore = create<OSState>((set, get) => ({
   
   openWindow: (window) => {
     const { maxZIndex, windows } = get();
-    const newZ = maxZIndex + 1;
+    let newZ = maxZIndex + 1;
+    
+    // Normalize z-indexes if they get too high
+    if (newZ > 10000) {
+      const sortedWindows = [...windows].sort((a, b) => a.z - b.z);
+      const normalizedWindows = sortedWindows.map((w, i) => ({ ...w, z: i + 1 }));
+      newZ = normalizedWindows.length + 1;
+      const newWindow = { ...window, z: newZ };
+      set({
+        windows: [...normalizedWindows, newWindow],
+        activeWindowId: window.window_id,
+        maxZIndex: newZ
+      });
+      return;
+    }
+    
     const newWindow = { ...window, z: newZ };
     
     set({

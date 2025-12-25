@@ -115,8 +115,9 @@ async def websocket_endpoint(websocket: WebSocket, token: str = None):
         while True:
             data = await websocket.receive_json()
             
-            action = data.get("action")
-            topic = data.get("topic")
+            # Validate input types
+            action = data.get("action") if isinstance(data.get("action"), str) else None
+            topic = data.get("topic") if isinstance(data.get("topic"), str) else None
             
             if action == "subscribe" and topic in ALL_TOPICS:
                 manager.subscribe(websocket, topic)
@@ -125,7 +126,7 @@ async def websocket_endpoint(websocket: WebSocket, token: str = None):
                     websocket
                 )
             
-            elif action == "unsubscribe" and topic:
+            elif action == "unsubscribe" and topic in ALL_TOPICS:
                 manager.unsubscribe(websocket, topic)
                 await manager.send_personal_message(
                     {"type": "unsubscribed", "topic": topic},

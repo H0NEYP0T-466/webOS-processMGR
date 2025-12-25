@@ -277,3 +277,78 @@
 .admin-note {
   color: rgba(255, 255, 255, 0.4);
 }
+
+/* Confirm Dialog */
+.tm-dialog-overlay {
+  position: fixed;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  background: rgba(0, 0, 0, 0.5);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  z-index: 10000;
+}
+
+.tm-dialog {
+  background: #2a2a3e;
+  border-radius: 16px;
+  padding: 24px;
+  max-width: 400px;
+  border: 1px solid rgba(255, 255, 255, 0.1);
+  text-align: center;
+}
+
+.tm-dialog h3 {
+  margin: 0 0 12px;
+  color: #ff6b6b;
+  font-size: 18px;
+}
+
+.tm-dialog p {
+  margin: 0 0 8px;
+  color: rgba(255, 255, 255, 0.8);
+  font-size: 14px;
+}
+
+.tm-dialog .warning {
+  color: #feca57;
+  font-size: 12px;
+  margin-bottom: 16px;
+}
+
+.tm-dialog-actions {
+  display: flex;
+  justify-content: center;
+  gap: 12px;
+  margin-top: 20px;
+}
+
+.tm-dialog-actions button {
+  padding: 10px 20px;
+  border: none;
+  border-radius: 8px;
+  cursor: pointer;
+  font-size: 14px;
+  transition: all 0.2s ease;
+}
+
+.tm-dialog-actions button:not(.danger) {
+  background: rgba(255, 255, 255, 0.1);
+  color: white;
+}
+
+.tm-dialog-actions button:not(.danger):hover {
+  background: rgba(255, 255, 255, 0.2);
+}
+
+.tm-dialog-actions button.danger {
+  background: #ff6b6b;
+  color: white;
+}
+
+.tm-dialog-actions button.danger:hover {
+  background: #ff5252;
+}

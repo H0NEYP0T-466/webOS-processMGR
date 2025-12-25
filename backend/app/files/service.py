@@ -165,9 +165,12 @@ async def delete_node(node_id: str, owner_id: str) -> bool:
     
     # If folder, delete all children first
     if node["type"] == "folder":
+        import re
+        # Escape the path to prevent regex injection
+        escaped_path = re.escape(node['path'])
         await db.fs_nodes.delete_many({
             "owner_id": owner_id,
-            "path": {"$regex": f"^{node['path']}/"}
+            "path": {"$regex": f"^{escaped_path}/"}
         })
     
     result = await db.fs_nodes.delete_one({

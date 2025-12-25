@@ -37,10 +37,14 @@ interface BootProps {
 export function Boot({ onComplete, skipBoot = false }: BootProps) {
   const { bootPhase, bootProgress, bootMessage, setBootPhase, setBootProgress } = useOSStore();
   const [soundEnabled, setSoundEnabled] = useState(false);
+  const [hasCompleted, setHasCompleted] = useState(false);
 
   useEffect(() => {
+    if (hasCompleted) return;
+    
     if (skipBoot) {
       setBootPhase('done');
+      setHasCompleted(true);
       onComplete();
       return;
     }
@@ -48,12 +52,17 @@ export function Boot({ onComplete, skipBoot = false }: BootProps) {
     let currentPhaseIndex = 0;
     let currentMessageIndex = 0;
     let progress = 0;
+    let completedRef = false;
 
     const advanceBoot = () => {
+      if (completedRef) return;
+      
       const phaseData = BOOT_MESSAGES[currentPhaseIndex];
       
       if (!phaseData) {
+        completedRef = true;
         setBootPhase('done');
+        setHasCompleted(true);
         onComplete();
         return;
       }
@@ -69,9 +78,11 @@ export function Boot({ onComplete, skipBoot = false }: BootProps) {
         currentMessageIndex = 0;
       }
 
-      if (currentPhaseIndex >= BOOT_MESSAGES.length) {
+      if (currentPhaseIndex >= BOOT_MESSAGES.length && !completedRef) {
+        completedRef = true;
         setTimeout(() => {
           setBootPhase('done');
+          setHasCompleted(true);
           onComplete();
         }, 500);
       }
@@ -81,7 +92,7 @@ export function Boot({ onComplete, skipBoot = false }: BootProps) {
     const interval = setInterval(advanceBoot, 600);
 
     return () => clearInterval(interval);
-  }, [skipBoot, onComplete, setBootPhase, setBootProgress]);
+  }, [skipBoot]); // eslint-disable-line react-hooks/exhaustive-deps
 
   if (bootPhase === 'done') {
     return null;

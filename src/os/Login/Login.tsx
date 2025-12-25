@@ -2,7 +2,6 @@
  * Login Screen Component
  */
 import { useState } from 'react';
-import { motion } from 'framer-motion';
 import { api } from '../../services/api';
 import { wsClient } from '../../services/ws';
 import { useOSStore } from '../../state/osStore';
@@ -57,19 +56,9 @@ export function Login({ onSuccess }: LoginProps) {
   };
 
   return (
-    <motion.div 
-      className="login-screen"
-      initial={{ opacity: 0 }}
-      animate={{ opacity: 1 }}
-      exit={{ opacity: 0 }}
-    >
+    <div className="login-screen">
       <div className="login-container">
-        <motion.div 
-          className="login-card"
-          initial={{ scale: 0.9, opacity: 0 }}
-          animate={{ scale: 1, opacity: 1 }}
-          transition={{ delay: 0.1 }}
-        >
+        <div className="login-card">
           <div className="login-header">
             <div className="user-avatar">👤</div>
             <h2>{isRegistering ? 'Create Account' : 'Welcome'}</h2>
@@ -98,13 +87,9 @@ export function Login({ onSuccess }: LoginProps) {
             </div>
 
             {error && (
-              <motion.div 
-                className="error-message"
-                initial={{ opacity: 0, y: -10 }}
-                animate={{ opacity: 1, y: 0 }}
-              >
+              <div className="error-message">
                 {error}
-              </motion.div>
+              </div>
             )}
 
             <button 
@@ -131,12 +116,12 @@ export function Login({ onSuccess }: LoginProps) {
               ? 'Already have an account? Sign in' 
               : "Don't have an account? Create one"}
           </button>
-        </motion.div>
+        </div>
 
         <div className="login-footer">
           <p>WebOS v1.0.0</p>
         </div>
       </div>
-    </motion.div>
+    </div>
   );
 }
