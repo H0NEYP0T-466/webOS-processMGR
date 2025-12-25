@@ -46,8 +46,11 @@ def list_processes() -> List[dict]:
                 )
             
             # Convert cmdline list to string
-            if info.get("cmdline"):
-                info["cmdline"] = " ".join(info["cmdline"])
+            cmdline = info.get("cmdline")
+            if cmdline is not None:
+                info["cmdline"] = " ".join(cmdline) if cmdline else None
+            else:
+                info["cmdline"] = None
             
             procs.append(info)
             
@@ -84,6 +87,13 @@ def get_process_details(pid: int) -> Optional[dict]:
                 info["create_time"],
                 tz=timezone.utc
             )
+        
+        # Convert cmdline list to string
+        cmdline = info.get("cmdline")
+        if cmdline is not None:
+            info["cmdline"] = " ".join(cmdline) if cmdline else None
+        else:
+            info["cmdline"] = None
         
         info_emoji("🧵", f"Host process observed: pid={pid} name={info.get('name')} cpu={info.get('cpu_percent')}% mem={info.get('memory_percent', 0):.1f}%")
         
