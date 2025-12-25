@@ -99,9 +99,18 @@ export function TaskManager() {
       } else {
         fetchVirtualProcesses();
       }
-    }, 5000);
+    }, 2000); // Faster refresh interval (2 seconds)
 
     return () => clearInterval(interval);
+  }, [activeTab, fetchHostProcesses, fetchVirtualProcesses]);
+
+  // Manual refresh handler
+  const handleRefresh = useCallback(() => {
+    if (activeTab === 'host') {
+      fetchHostProcesses();
+    } else {
+      fetchVirtualProcesses();
+    }
   }, [activeTab, fetchHostProcesses, fetchVirtualProcesses]);
 
   // Stop virtual process
@@ -198,6 +207,14 @@ export function TaskManager() {
             value={searchTerm}
             onChange={(e) => setSearchTerm(e.target.value)}
           />
+          <button 
+            className="tm-refresh-btn"
+            onClick={handleRefresh}
+            disabled={loading}
+            title="Refresh processes"
+          >
+            {loading ? '⟳' : '🔄'}
+          </button>
         </div>
       </div>
 
@@ -366,6 +383,13 @@ function VirtualProcessesTab({ processes, onStop, loading }: VirtualProcessesTab
           ))}
         </tbody>
       </table>
+      <div className="tm-footer">
+        <span>Running: {processes.length} virtual processes</span>
+        <span className="process-stats">
+          CPU: {processes.reduce((sum, p) => sum + p.cpu, 0).toFixed(1)}% | 
+          Memory: {processes.reduce((sum, p) => sum + p.mem, 0).toFixed(1)}%
+        </span>
+      </div>
     </div>
   );
 }

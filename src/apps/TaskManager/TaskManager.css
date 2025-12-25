@@ -39,6 +39,12 @@
   color: #4facfe;
 }
 
+.tm-search {
+  display: flex;
+  gap: 8px;
+  align-items: center;
+}
+
 .tm-search input {
   padding: 8px 12px;
   border: 1px solid rgba(255, 255, 255, 0.1);
@@ -56,6 +62,34 @@
 
 .tm-search input::placeholder {
   color: rgba(255, 255, 255, 0.4);
+}
+
+.tm-refresh-btn {
+  padding: 8px 12px;
+  border: 1px solid rgba(255, 255, 255, 0.1);
+  border-radius: 6px;
+  background: rgba(255, 255, 255, 0.05);
+  color: rgba(255, 255, 255, 0.8);
+  font-size: 14px;
+  cursor: pointer;
+  transition: all 0.2s ease;
+}
+
+.tm-refresh-btn:hover:not(:disabled) {
+  background: rgba(79, 172, 254, 0.2);
+  border-color: #4facfe;
+  color: #4facfe;
+}
+
+.tm-refresh-btn:disabled {
+  opacity: 0.5;
+  cursor: not-allowed;
+  animation: spin 1s linear infinite;
+}
+
+@keyframes spin {
+  from { transform: rotate(0deg); }
+  to { transform: rotate(360deg); }
 }
 
 .tm-error {
@@ -276,6 +310,11 @@
 
 .admin-note {
   color: rgba(255, 255, 255, 0.4);
+}
+
+.process-stats {
+  color: rgba(79, 172, 254, 0.8);
+  font-weight: 500;
 }
 
 /* Confirm Dialog */

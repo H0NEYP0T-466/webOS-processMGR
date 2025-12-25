@@ -37,15 +37,16 @@ export function Window({ window: win, children, title, icon = '📁' }: WindowPr
   const isActive = activeWindowId === win.window_id;
 
   const handleClose = useCallback(async () => {
-    // Find and stop the virtual process associated with this window
+    // Find and delete the virtual process associated with this window
     const process = virtualProcesses.find(
       p => p.metadata?.window_id === win.window_id || p.app === win.app
     );
     if (process) {
       try {
-        await api.stopVirtualProcess(process.id);
+        // Delete the process entirely so it doesn't show up in task manager
+        await api.deleteVirtualProcess(process.id);
       } catch (error) {
-        console.error('Failed to stop virtual process:', error);
+        console.error('Failed to delete virtual process:', error);
       }
     }
     closeWindow(win.window_id);
