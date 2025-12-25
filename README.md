@@ -44,7 +44,7 @@ Two tabs for comprehensive process monitoring:
 Emoji-rich logs for all major events:
 ```
 ✅ MongoDB connected: mongodb://***localhost:27017
-🟢 Server started: http://0.0.0.0:8000
+🟢 Server started: http://0.0.0.0:8888
 👤 User registered: username=john
 🔐 Login success: username=john
 🗂️ Folder created: path=/Documents owner=user123
@@ -96,11 +96,22 @@ docker-compose up -d
 
 # Access the app
 # Frontend: http://localhost
-# Backend: http://localhost:8000
-# API Docs: http://localhost:8000/docs
+# Backend: http://localhost:8888
+# API Docs: http://localhost:8888/docs
 ```
 
 ### Option 2: Manual Setup
+
+**Important:** Before starting, create a `.env` file in the project root:
+```bash
+# Copy the example file
+cp .env.example .env
+
+# The .env file should contain:
+# VITE_API_URL=http://localhost:8888
+# VITE_WS_URL=ws://localhost:8888/ws
+# (plus other backend configuration)
+```
 
 #### Backend
 
@@ -122,7 +133,7 @@ export ADMIN_USER=admin
 export ADMIN_PASS=admin123
 
 # Start the server
-uvicorn app.main:app --host 0.0.0.0 --port 8000 --reload
+uvicorn app.main:app --host 0.0.0.0 --port 8888 --reload
 ```
 
 #### Frontend
@@ -131,9 +142,10 @@ uvicorn app.main:app --host 0.0.0.0 --port 8000 --reload
 # Install dependencies
 npm install
 
-# Set environment variables (or create .env.local)
-export VITE_API_URL=http://localhost:8000
-export VITE_WS_URL=ws://localhost:8000/ws
+# Set environment variables (create .env file in project root)
+# Copy from .env.example and ensure these are set:
+# VITE_API_URL=http://localhost:8888
+# VITE_WS_URL=ws://localhost:8888/ws
 
 # Start development server
 npm run dev
@@ -154,12 +166,12 @@ npm run dev
 | `CORS_ORIGINS` | Allowed CORS origins | `http://localhost:5173` |
 | `LOG_LEVEL` | Logging level | `INFO` |
 
-### Frontend (.env.local)
+### Frontend (.env)
 
 | Variable | Description | Default |
 |----------|-------------|---------|
-| `VITE_API_URL` | Backend API URL | `http://localhost:8000` |
-| `VITE_WS_URL` | WebSocket URL | `ws://localhost:8000/ws` |
+| `VITE_API_URL` | Backend API URL | `http://localhost:8888` |
+| `VITE_WS_URL` | WebSocket URL | `ws://localhost:8888/ws` |
 
 ## API Reference
 
