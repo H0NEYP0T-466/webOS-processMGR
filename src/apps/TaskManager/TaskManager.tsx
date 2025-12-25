@@ -13,6 +13,9 @@ import './TaskManager.css';
 type TabType = 'virtual' | 'host';
 type ViewMode = 'table' | 'grid';
 
+// Configuration for grid view display limits
+const GRID_VIEW_LIMIT = 20;
+
 export function TaskManager() {
   const [activeTab, setActiveTab] = useState<TabType>('virtual');
   const [virtualProcesses, setVirtualProcesses] = useState<VirtualProcess[]>([]);
@@ -543,7 +546,7 @@ export function TaskManager() {
               <div className="dialog-icon">⚠️</div>
               <h3>End Virtual Process</h3>
               <p>Are you sure you want to end this virtual process?</p>
-              <p className="process-info">Process ID: {confirmTerminate?.slice(0, 8)}...</p>
+              <p className="process-info">Process ID: {confirmTerminate ? confirmTerminate.slice(0, 8) : ''}...</p>
               <div className="tm-dialog-actions">
                 <motion.button 
                   onClick={() => setConfirmTerminate(null)}
@@ -807,7 +810,7 @@ function HostProcessesTab({
       <>
         <div className="tm-grid host-grid">
           <AnimatePresence mode="popLayout">
-            {processes.slice(0, 20).map((proc, index) => (
+            {processes.slice(0, GRID_VIEW_LIMIT).map((proc, index) => (
               <motion.div
                 key={proc.pid}
                 className={`tm-grid-card host ${selectedProcess === proc.pid ? 'selected' : ''}`}
@@ -850,7 +853,7 @@ function HostProcessesTab({
           initial={{ opacity: 0 }}
           animate={{ opacity: 1 }}
         >
-          <span>Showing top 20 of {processes.length} processes</span>
+          <span>Showing top {GRID_VIEW_LIMIT} of {processes.length} processes</span>
           <span className="system-note">🔒 System processes cannot be terminated for security</span>
         </motion.div>
       </>
