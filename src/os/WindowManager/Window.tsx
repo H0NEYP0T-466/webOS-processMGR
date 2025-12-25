@@ -4,6 +4,7 @@
 import { useState, useRef, useCallback, useEffect } from 'react';
 import { motion } from 'framer-motion';
 import { useOSStore } from '../../state/osStore';
+import { api } from '../../services/api';
 import type { WindowState } from '../../types';
 import './Window.css';
 
@@ -23,7 +24,8 @@ export function Window({ window: win, children, title, icon = '📁' }: WindowPr
     focusWindow,
     updateWindowPosition,
     updateWindowSize,
-    activeWindowId 
+    activeWindowId,
+    virtualProcesses
   } = useOSStore();
   
   const windowRef = useRef<HTMLDivElement>(null);
@@ -33,6 +35,21 @@ export function Window({ window: win, children, title, icon = '📁' }: WindowPr
   const [windowStart, setWindowStart] = useState({ x: 0, y: 0, w: 0, h: 0 });
 
   const isActive = activeWindowId === win.window_id;
+
+  const handleClose = useCallback(async () => {
+    // Find and stop the virtual process associated with this window
+    const process = virtualProcesses.find(
+      p => p.metadata?.window_id === win.window_id || p.app === win.app
+    );
+    if (process) {
+      try {
+        await api.stopVirtualProcess(process.id);
+      } catch (error) {
+        console.error('Failed to stop virtual process:', error);
+      }
+    }
+    closeWindow(win.window_id);
+  }, [closeWindow, win.window_id, win.app, virtualProcesses]);
 
   const handleMouseDown = useCallback((e: React.MouseEvent) => {
     if ((e.target as HTMLElement).closest('.window-controls')) return;
@@ -149,7 +166,7 @@ export function Window({ window: win, children, title, icon = '📁' }: WindowPr
           </button>
           <button 
             className="window-control close"
-            onClick={() => closeWindow(win.window_id)}
+            onClick={handleClose}
           >
             ×
           </button>

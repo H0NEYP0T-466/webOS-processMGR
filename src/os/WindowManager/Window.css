@@ -1,17 +1,17 @@
 .window {
   position: absolute;
-  background: rgba(30, 30, 40, 0.95);
+  background: var(--window-bg);
   border-radius: 12px;
   overflow: hidden;
-  box-shadow: 0 10px 40px rgba(0, 0, 0, 0.4);
-  border: 1px solid rgba(255, 255, 255, 0.1);
+  box-shadow: 0 10px 40px var(--shadow-color);
+  border: 1px solid var(--border-color);
   display: flex;
   flex-direction: column;
   backdrop-filter: blur(20px);
 }
 
 .window.active {
-  box-shadow: 0 20px 60px rgba(0, 0, 0, 0.5), 0 0 0 1px rgba(79, 172, 254, 0.3);
+  box-shadow: 0 20px 60px var(--shadow-color), 0 0 0 1px rgba(79, 172, 254, 0.3);
 }
 
 .window.maximized {
@@ -20,7 +20,7 @@
 
 .window-title-bar {
   height: 36px;
-  background: rgba(20, 20, 30, 0.9);
+  background: var(--taskbar-bg);
   display: flex;
   align-items: center;
   justify-content: space-between;
@@ -37,7 +37,7 @@
   display: flex;
   align-items: center;
   gap: 8px;
-  color: rgba(255, 255, 255, 0.8);
+  color: var(--text-secondary);
   font-size: 13px;
 }
 
@@ -92,7 +92,7 @@
 .window-content {
   flex: 1;
   overflow: auto;
-  color: white;
+  color: var(--text-primary);
 }
 
 .window-resize-handle {
@@ -111,6 +111,6 @@
   right: 4px;
   width: 8px;
   height: 8px;
-  border-right: 2px solid rgba(255, 255, 255, 0.3);
-  border-bottom: 2px solid rgba(255, 255, 255, 0.3);
+  border-right: 2px solid var(--text-muted);
+  border-bottom: 2px solid var(--text-muted);
 }

@@ -14,7 +14,12 @@ type AppPhase = 'boot' | 'login' | 'desktop';
 
 function App() {
   const [phase, setPhase] = useState<AppPhase>('boot');
-  const { isAuthenticated, setUser, token } = useOSStore();
+  const { isAuthenticated, setUser, token, theme } = useOSStore();
+
+  // Apply theme to document
+  useEffect(() => {
+    document.documentElement.setAttribute('data-theme', theme);
+  }, [theme]);
 
   // Check for existing session on mount
   useEffect(() => {

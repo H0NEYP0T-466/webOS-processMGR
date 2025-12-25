@@ -26,6 +26,7 @@ CRITICAL_PROCESS_NAMES = {
 def list_processes() -> List[dict]:
     """List all running processes on the host system."""
     procs = []
+    cpu_count = psutil.cpu_count() or 1
     
     for p in psutil.process_iter(attrs=["pid", "name", "username", "status"]):
         try:
@@ -35,7 +36,9 @@ def list_processes() -> List[dict]:
             ])
             
             # Get CPU and memory percent (with small interval for CPU)
-            info["cpu_percent"] = p.cpu_percent(interval=0.0)
+            # Normalize CPU percent to 0-100 range (divide by CPU count for per-core normalization)
+            raw_cpu = p.cpu_percent(interval=0.0)
+            info["cpu_percent"] = min(100.0, raw_cpu / cpu_count) if raw_cpu > 0 else 0.0
             info["memory_percent"] = p.memory_percent()
             
             # Convert create_time to datetime
@@ -65,9 +68,11 @@ def get_process_details(pid: int) -> Optional[dict]:
     try:
         p = psutil.Process(pid)
         info = p.as_dict()
+        cpu_count = psutil.cpu_count() or 1
         
-        # Add CPU and memory
-        info["cpu_percent"] = p.cpu_percent(interval=0.1)
+        # Add CPU and memory (normalized to 0-100 range)
+        raw_cpu = p.cpu_percent(interval=0.1)
+        info["cpu_percent"] = min(100.0, raw_cpu / cpu_count) if raw_cpu > 0 else 0.0
         info["memory_percent"] = p.memory_percent()
         
         # Try to get open files and connections
@@ -99,7 +104,7 @@ def get_process_details(pid: int) -> Optional[dict]:
         
         return info
         
-    except (psutil.NoSuchProcess, psutil.AccessDenied) as e:
+    except (psutil.NoSuchProcess, psutil.AccessDenied):
         return None
 
 

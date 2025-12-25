@@ -71,7 +71,7 @@ export function Desktop() {
     return () => clearTimeout(timeout);
   }, [windows, wallpaper, getDesktopState]);
 
-  const handleOpenApp = useCallback((appId: string) => {
+  const handleOpenApp = useCallback(async (appId: string) => {
     const existingWindow = windows.find(w => w.app === appId);
     
     if (existingWindow) {
@@ -79,8 +79,17 @@ export function Desktop() {
       return;
     }
 
+    const windowId = `${appId}-${Date.now()}`;
+    
+    // Start a virtual process for this app
+    try {
+      await api.startVirtualProcess(appId, { window_id: windowId });
+    } catch (error) {
+      console.error('Failed to start virtual process:', error);
+    }
+
     openWindow({
-      window_id: `${appId}-${Date.now()}`,
+      window_id: windowId,
       app: appId,
       x: 100 + Math.random() * 100,
       y: 50 + Math.random() * 100,
@@ -105,10 +114,15 @@ export function Desktop() {
     return date.toLocaleDateString([], { weekday: 'short', month: 'short', day: 'numeric' });
   };
 
+  // Determine wallpaper style - gradient or image
+  const wallpaperStyle = wallpaper.startsWith('linear-gradient') || wallpaper.startsWith('radial-gradient')
+    ? { background: wallpaper }
+    : { backgroundImage: `url(${wallpaper})` };
+
   return (
     <div 
       className="desktop"
-      style={{ backgroundImage: `url(${wallpaper})` }}
+      style={wallpaperStyle}
     >
       {/* Desktop Icons */}
       <div className="desktop-icons">
