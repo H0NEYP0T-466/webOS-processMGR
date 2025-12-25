@@ -1,0 +1,121 @@
+"""File system routes."""
+from fastapi import APIRouter, HTTPException, status, Depends
+
+from ..auth.service import get_current_user
+from ..auth.schemas import TokenData
+from .schemas import CreateFolder, CreateFile, UpdateNode, FSNode, FSTree
+from . import service
+
+router = APIRouter(prefix="/files", tags=["files"])
+
+
+def doc_to_node(doc: dict) -> FSNode:
+    """Convert MongoDB document to FSNode."""
+    return FSNode(
+        id=str(doc["_id"]),
+        owner_id=doc["owner_id"],
+        type=doc["type"],
+        name=doc["name"],
+        parent_id=doc.get("parent_id"),
+        path=doc["path"],
+        content=doc.get("content"),
+        mime_type=doc.get("mime_type"),
+        size=doc.get("size"),
+        created_at=doc["created_at"],
+        updated_at=doc["updated_at"]
+    )
+
+
+@router.post("/folder", response_model=FSNode)
+async def create_folder(
+    data: CreateFolder,
+    current_user: TokenData = Depends(get_current_user)
+):
+    """Create a new folder."""
+    folder = await service.create_folder(
+        name=data.name,
+        parent_id=data.parent_id,
+        owner_id=current_user.user_id
+    )
+    return doc_to_node(folder)
+
+
+@router.post("/file", response_model=FSNode)
+async def create_file(
+    data: CreateFile,
+    current_user: TokenData = Depends(get_current_user)
+):
+    """Create a new file."""
+    file = await service.create_file(
+        name=data.name,
+        parent_id=data.parent_id,
+        owner_id=current_user.user_id,
+        content=data.content,
+        mime_type=data.mime_type
+    )
+    return doc_to_node(file)
+
+
+@router.get("/tree", response_model=FSTree)
+async def get_tree(current_user: TokenData = Depends(get_current_user)):
+    """Get all files and folders for current user."""
+    nodes = await service.get_tree(current_user.user_id)
+    return FSTree(nodes=[doc_to_node(n) for n in nodes])
+
+
+@router.get("/node/{node_id}", response_model=FSNode)
+async def get_node(
+    node_id: str,
+    current_user: TokenData = Depends(get_current_user)
+):
+    """Get a single file or folder."""
+    node = await service.get_node(node_id, current_user.user_id)
+    
+    if node is None:
+        raise HTTPException(
+            status_code=status.HTTP_404_NOT_FOUND,
+            detail="Node not found"
+        )
+    
+    return doc_to_node(node)
+
+
+@router.patch("/node/{node_id}", response_model=FSNode)
+async def update_node(
+    node_id: str,
+    data: UpdateNode,
+    current_user: TokenData = Depends(get_current_user)
+):
+    """Update a file or folder."""
+    node = await service.update_node(
+        node_id=node_id,
+        owner_id=current_user.user_id,
+        name=data.name,
+        parent_id=data.parent_id,
+        content=data.content
+    )
+    
+    if node is None:
+        raise HTTPException(
+            status_code=status.HTTP_404_NOT_FOUND,
+            detail="Node not found"
+        )
+    
+    return doc_to_node(node)
+
+
+@router.delete("/node/{node_id}")
+async def delete_node(
+    node_id: str,
+    current_user: TokenData = Depends(get_current_user)
+):
+    """Delete a file or folder."""
+    success = await service.delete_node(node_id, current_user.user_id)
+    
+    if not success:
+        raise HTTPException(
+            status_code=status.HTTP_404_NOT_FOUND,
+            detail="Node not found"
+        )
+    
+    return {"message": "Node deleted"}
