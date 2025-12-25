@@ -14,13 +14,14 @@ class WindowState(BaseModel):
     """Window state."""
     window_id: str
     app: str
-    x: int
-    y: int
-    w: int
-    h: int
+    x: float
+    y: float
+    w: float
+    h: float
     minimized: bool = False
     maximized: bool = False
     z: int = 0
+    data: Optional[Dict[str, Any]] = None
 
 
 class DesktopState(BaseModel):
