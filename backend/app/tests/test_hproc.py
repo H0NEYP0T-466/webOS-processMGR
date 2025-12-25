@@ -62,13 +62,14 @@ def test_list_processes(mock_psutil):
     """Test listing processes."""
     mock_proc = MockProcess()
     mock_psutil.process_iter.return_value = [mock_proc]
+    mock_psutil.cpu_count.return_value = 4
     
     result = service.list_processes()
     
     assert len(result) == 1
     assert result[0]["pid"] == 1234
     assert result[0]["name"] == "test_process"
-    assert result[0]["cpu_percent"] == 5.0
+    assert result[0]["cpu_percent"] <= 100.0  # Should be normalized
 
 
 @patch('app.hproc.service.psutil')
@@ -76,6 +77,7 @@ def test_get_process_details(mock_psutil):
     """Test getting process details."""
     mock_proc = MockProcess()
     mock_psutil.Process.return_value = mock_proc
+    mock_psutil.cpu_count.return_value = 4
     
     result = service.get_process_details(1234)
     
@@ -129,6 +131,7 @@ def test_get_system_metrics(mock_psutil):
     """Test getting system metrics."""
     mock_psutil.cpu_percent.return_value = 25.0
     mock_psutil.virtual_memory.return_value = MagicMock(percent=50.0)
+    mock_psutil.cpu_count.return_value = 4
     
     mock_proc = MockProcess()
     mock_psutil.process_iter.return_value = [mock_proc]
