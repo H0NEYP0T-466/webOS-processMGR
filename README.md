@@ -69,7 +69,7 @@ Emoji-rich logs for all major events:
 - Motor (async MongoDB driver)
 - psutil (system monitoring)
 - python-jose (JWT)
-- passlib (password hashing)
+- bcrypt (password hashing)
 - WebSockets
 
 ### Database
