@@ -2,7 +2,8 @@
  * WebSocket client for real-time updates
  */
 
-const WS_URL = import.meta.env.VITE_WS_URL || 'ws://localhost:8000/ws';
+// Use relative WebSocket URL with current host, or override with environment variable
+const WS_URL = import.meta.env.VITE_WS_URL || `${window.location.protocol === 'https:' ? 'wss:' : 'ws:'}//${window.location.host}/ws`;
 
 type MessageHandler = (data: unknown) => void;
 
