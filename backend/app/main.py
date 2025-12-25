@@ -1,12 +1,13 @@
 """WebOS Backend - FastAPI Application."""
 from contextlib import asynccontextmanager
 from datetime import datetime, timezone
-from fastapi import FastAPI, WebSocket, WebSocketDisconnect, Depends, HTTPException, status
+from fastapi import FastAPI, WebSocket, WebSocketDisconnect, Depends, HTTPException, status, Request
 from fastapi.middleware.cors import CORSMiddleware
+from fastapi.responses import JSONResponse
 
 from .config import settings
 from .deps import connect_to_database, close_database_connection, get_database
-from .logging_config import info_emoji
+from .logging_config import info_emoji, error_emoji
 from .auth.routes import router as auth_router
 from .auth.service import hash_password, decode_token
 from .files.routes import router as files_router
@@ -21,8 +22,15 @@ from .ws.topics import ALL_TOPICS
 async def lifespan(app: FastAPI):
     """Application lifespan - startup and shutdown events."""
     # Startup
-    await connect_to_database()
-    await ensure_admin_user()
+    db_connected = False
+    try:
+        await connect_to_database()
+        db_connected = True
+        await ensure_admin_user()
+    except Exception as e:
+        error_emoji("❌", f"Failed to connect to database: {e}")
+        error_emoji("⚠️", "Server starting without database connection. Some features may be unavailable.")
+    
     await manager.start_metrics_broadcast()
     info_emoji("🟢", f"Server started: http://0.0.0.0:8888")
     
@@ -30,7 +38,8 @@ async def lifespan(app: FastAPI):
     
     # Shutdown
     await manager.stop_metrics_broadcast()
-    await close_database_connection()
+    if db_connected:
+        await close_database_connection()
 
 
 async def ensure_admin_user():
@@ -76,6 +85,23 @@ app.add_middleware(
     allow_headers=["*"],
 )
 
+# Exception handler for database connection errors
+@app.exception_handler(RuntimeError)
+async def runtime_error_handler(request: Request, exc: RuntimeError):
+    """Handle RuntimeError exceptions, particularly database connection issues."""
+    error_message = str(exc)
+    if "Database not connected" in error_message:
+        return JSONResponse(
+            status_code=status.HTTP_503_SERVICE_UNAVAILABLE,
+            content={"detail": "Database service is unavailable. Please try again later."}
+        )
+    # Re-raise other RuntimeErrors
+    return JSONResponse(
+        status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
+        content={"detail": "Internal server error"}
+    )
+
+
 # Include routers
 app.include_router(auth_router)
 app.include_router(files_router)
@@ -87,8 +113,15 @@ app.include_router(hproc_router)
 @app.get("/health")
 async def health_check():
     """Health check endpoint."""
+    db_status = "connected"
+    try:
+        get_database()
+    except RuntimeError:
+        db_status = "disconnected"
+    
     return {
-        "status": "ok",
+        "status": "ok" if db_status == "connected" else "degraded",
+        "database": db_status,
         "timestamp": datetime.now(timezone.utc).isoformat()
     }
 
