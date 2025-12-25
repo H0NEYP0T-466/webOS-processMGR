@@ -46,8 +46,11 @@ def list_processes() -> List[dict]:
                 )
             
             # Convert cmdline list to string
-            if info.get("cmdline"):
-                info["cmdline"] = " ".join(info["cmdline"])
+            cmdline = info.get("cmdline")
+            if cmdline is not None:
+                info["cmdline"] = " ".join(cmdline) if cmdline else None
+            else:
+                info["cmdline"] = None
             
             procs.append(info)
             
