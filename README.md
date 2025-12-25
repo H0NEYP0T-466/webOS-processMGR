@@ -102,6 +102,17 @@ docker-compose up -d
 
 ### Option 2: Manual Setup
 
+**Important:** Before starting, create a `.env` file in the project root:
+```bash
+# Copy the example file
+cp .env.example .env
+
+# The .env file should contain:
+# VITE_API_URL=http://localhost:8888
+# VITE_WS_URL=ws://localhost:8888/ws
+# (plus other backend configuration)
+```
+
 #### Backend
 
 ```bash
