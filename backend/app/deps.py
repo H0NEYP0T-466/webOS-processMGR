@@ -13,11 +13,14 @@ _db: Optional[AsyncIOMotorDatabase] = None
 async def connect_to_database() -> None:
     """Connect to MongoDB."""
     global _client, _db
-    _client = AsyncIOMotorClient(settings.MONGO_URI)
-    _db = _client[settings.MONGO_DB_NAME]
+    client = AsyncIOMotorClient(settings.MONGO_URI)
+    db = client[settings.MONGO_DB_NAME]
     
-    # Verify connection
-    await _client.admin.command("ping")
+    # Verify connection before setting global variables
+    await client.admin.command("ping")
+    
+    _client = client
+    _db = db
     
     # Redact sensitive info from URI for logging
     uri_parts = settings.MONGO_URI.split("@")
