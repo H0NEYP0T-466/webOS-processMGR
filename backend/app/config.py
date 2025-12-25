@@ -19,7 +19,7 @@ class Settings(BaseSettings):
     ADMIN_PASS: str = "admin123"
     
     # Server
-    CORS_ORIGINS: str = "http://localhost:5173,http://localhost:3000"
+    CORS_ORIGINS: str = "*"
     LOG_LEVEL: str = "INFO"
     
     class Config:

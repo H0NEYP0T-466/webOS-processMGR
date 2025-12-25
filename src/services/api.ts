@@ -2,7 +2,7 @@
  * API client for WebOS backend
  */
 
-const API_URL = import.meta.env.VITE_API_URL || 'http://localhost:8000';
+const API_URL = import.meta.env.VITE_API_URL || 'http://localhost:8888';
 
 class ApiClient {
   private token: string | null = null;
