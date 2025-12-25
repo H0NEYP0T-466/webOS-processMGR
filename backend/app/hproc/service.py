@@ -88,6 +88,13 @@ def get_process_details(pid: int) -> Optional[dict]:
                 tz=timezone.utc
             )
         
+        # Convert cmdline list to string
+        cmdline = info.get("cmdline")
+        if cmdline is not None:
+            info["cmdline"] = " ".join(cmdline) if cmdline else None
+        else:
+            info["cmdline"] = None
+        
         info_emoji("🧵", f"Host process observed: pid={pid} name={info.get('name')} cpu={info.get('cpu_percent')}% mem={info.get('memory_percent', 0):.1f}%")
         
         return info
