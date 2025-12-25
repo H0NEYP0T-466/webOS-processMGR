@@ -184,6 +184,12 @@ class ApiClient {
     });
   }
 
+  async deleteVirtualProcess(processId: string) {
+    return this.request(`/vproc/${processId}`, {
+      method: 'DELETE',
+    });
+  }
+
   // Host process endpoints
   async listHostProcesses() {
     return this.request<{ processes: Array<{

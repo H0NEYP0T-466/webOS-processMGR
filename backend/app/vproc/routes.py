@@ -39,9 +39,15 @@ async def start_process(
 
 
 @router.get("/list", response_model=VirtualProcessList)
-async def list_processes(current_user: TokenData = Depends(get_current_user)):
-    """List all virtual processes."""
-    processes = await service.list_processes(current_user.user_id)
+async def list_processes(
+    include_stopped: bool = False,
+    current_user: TokenData = Depends(get_current_user)
+):
+    """List virtual processes. By default only shows running processes."""
+    processes = await service.list_processes(
+        current_user.user_id,
+        running_only=not include_stopped
+    )
     return VirtualProcessList(processes=[doc_to_process(p) for p in processes])
 
 

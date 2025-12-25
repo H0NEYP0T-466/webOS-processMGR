@@ -1,9 +1,9 @@
 /**
  * Task Manager App - Virtual OS and Host System Processes
  */
-import { useState, useEffect, useCallback } from 'react';
-import { motion, AnimatePresence } from 'framer-motion';
-import { ResponsiveContainer, Area, AreaChart, Tooltip, XAxis } from 'recharts';
+import { useState, useEffect, useCallback, useMemo } from 'react';
+import { motion } from 'framer-motion';
+import { ResponsiveContainer, Area, AreaChart } from 'recharts';
 import { api } from '../../services/api';
 import { wsClient, WS_TOPICS } from '../../services/ws';
 import { useOSStore } from '../../state/osStore';
@@ -116,9 +116,18 @@ export function TaskManager() {
       } else {
         fetchVirtualProcesses();
       }
-    }, 5000);
+    }, 2000); // Faster refresh interval (2 seconds)
 
     return () => clearInterval(interval);
+  }, [activeTab, fetchHostProcesses, fetchVirtualProcesses]);
+
+  // Manual refresh handler
+  const handleRefresh = useCallback(() => {
+    if (activeTab === 'host') {
+      fetchHostProcesses();
+    } else {
+      fetchVirtualProcesses();
+    }
   }, [activeTab, fetchHostProcesses, fetchVirtualProcesses]);
 
   // Stop virtual process
@@ -227,73 +236,22 @@ export function TaskManager() {
           </motion.button>
         </div>
         
-        <div className="tm-header-actions">
-          <div className="tm-search">
-            <motion.span 
-              className="search-icon"
-              initial={{ opacity: 0.5 }}
-              animate={{ opacity: searchTerm ? 1 : 0.5 }}
-            >
-              🔍
-            </motion.span>
-            <input
-              type="text"
-              placeholder="Search processes..."
-              value={searchTerm}
-              onChange={(e) => setSearchTerm(e.target.value)}
-            />
-            <AnimatePresence>
-              {searchTerm && (
-                <motion.button
-                  className="search-clear"
-                  onClick={() => setSearchTerm('')}
-                  initial={{ opacity: 0, scale: 0.8 }}
-                  animate={{ opacity: 1, scale: 1 }}
-                  exit={{ opacity: 0, scale: 0.8 }}
-                  whileHover={{ scale: 1.1 }}
-                  whileTap={{ scale: 0.9 }}
-                >
-                  ×
-                </motion.button>
-              )}
-            </AnimatePresence>
-          </div>
-          
-          <motion.button
-            className={`tm-refresh-btn ${isRefreshing ? 'refreshing' : ''}`}
+        <div className="tm-search">
+          <input
+            type="text"
+            placeholder="Search processes..."
+            value={searchTerm}
+            onChange={(e) => setSearchTerm(e.target.value)}
+          />
+          <button 
+            className="tm-refresh-btn"
             onClick={handleRefresh}
-            whileHover={{ scale: 1.05 }}
-            whileTap={{ scale: 0.95 }}
+            disabled={loading}
             title="Refresh processes"
+            aria-label="Refresh process list"
           >
-            <motion.span
-              animate={{ rotate: isRefreshing ? 360 : 0 }}
-              transition={{ duration: 0.5, ease: 'linear' }}
-            >
-              🔄
-            </motion.span>
-          </motion.button>
-
-          <div className="tm-view-toggle">
-            <motion.button
-              className={`view-btn ${viewMode === 'table' ? 'active' : ''}`}
-              onClick={() => setViewMode('table')}
-              whileHover={{ scale: 1.05 }}
-              whileTap={{ scale: 0.95 }}
-              title="Table view"
-            >
-              📋
-            </motion.button>
-            <motion.button
-              className={`view-btn ${viewMode === 'grid' ? 'active' : ''}`}
-              onClick={() => setViewMode('grid')}
-              whileHover={{ scale: 1.05 }}
-              whileTap={{ scale: 0.95 }}
-              title="Grid view"
-            >
-              📊
-            </motion.button>
-          </div>
+            {loading ? '⟳' : '🔄'}
+          </button>
         </div>
       </div>
 
@@ -582,7 +540,13 @@ interface VirtualProcessesTabProps {
   onSelect: (id: string | null) => void;
 }
 
-function VirtualProcessesTab({ processes, onStop, loading, viewMode, selectedProcess, onSelect }: VirtualProcessesTabProps) {
+function VirtualProcessesTab({ processes, onStop, loading }: VirtualProcessesTabProps) {
+  // Memoize CPU and memory calculations
+  const stats = useMemo(() => ({
+    totalCpu: processes.reduce((sum, p) => sum + p.cpu, 0),
+    totalMem: processes.reduce((sum, p) => sum + p.mem, 0)
+  }), [processes]);
+
   if (loading && processes.length === 0) {
     return (
       <motion.div 
@@ -745,16 +709,13 @@ function VirtualProcessesTab({ processes, onStop, loading, viewMode, selectedPro
           </AnimatePresence>
         </tbody>
       </table>
-      
-      <motion.div 
-        className="tm-footer"
-        initial={{ opacity: 0 }}
-        animate={{ opacity: 1 }}
-        transition={{ delay: 0.3 }}
-      >
-        <span>Total: {processes.length} virtual process{processes.length !== 1 ? 'es' : ''}</span>
-        <span className="footer-hint">💡 You can end virtual OS tasks safely</span>
-      </motion.div>
+      <div className="tm-footer">
+        <span>Running: {processes.length} virtual processes</span>
+        <span className="process-stats">
+          CPU: {stats.totalCpu.toFixed(1)}% | 
+          Memory: {stats.totalMem.toFixed(1)}%
+        </span>
+      </div>
     </div>
   );
 }

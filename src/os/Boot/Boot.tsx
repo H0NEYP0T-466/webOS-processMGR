@@ -89,7 +89,7 @@ export function Boot({ onComplete, skipBoot = false }: BootProps) {
     };
 
     advanceBoot();
-    const interval = setInterval(advanceBoot, 600);
+    const interval = setInterval(advanceBoot, 200);
 
     return () => clearInterval(interval);
   }, [skipBoot]); // eslint-disable-line react-hooks/exhaustive-deps

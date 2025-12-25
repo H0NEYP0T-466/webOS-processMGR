@@ -33,11 +33,20 @@ async def start_process(app: str, owner_id: str, metadata: dict = None) -> dict:
     return proc_doc
 
 
-async def list_processes(owner_id: str) -> List[dict]:
-    """List all virtual processes for a user."""
+async def list_processes(owner_id: str, running_only: bool = True) -> List[dict]:
+    """List virtual processes for a user.
+    
+    Args:
+        owner_id: The user's ID
+        running_only: If True, only return running processes (default)
+    """
     db = get_database()
     
-    cursor = db.virtual_processes.find({"owner_id": owner_id})
+    query = {"owner_id": owner_id}
+    if running_only:
+        query["status"] = "running"
+    
+    cursor = db.virtual_processes.find(query)
     processes = await cursor.to_list(length=100)
     
     return processes

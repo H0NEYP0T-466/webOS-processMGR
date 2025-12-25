@@ -107,7 +107,7 @@ class ConnectionManager:
         """Background loop to broadcast system metrics."""
         while True:
             try:
-                await asyncio.sleep(2)  # Broadcast every 2 seconds
+                await asyncio.sleep(1)  # Broadcast every 1 second for faster updates
                 
                 # Get metrics only if there are subscribed connections
                 has_subscribers = any(
