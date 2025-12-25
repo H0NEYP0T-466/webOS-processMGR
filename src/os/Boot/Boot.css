@@ -1,0 +1,100 @@
+.boot-screen {
+  position: fixed;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  background: linear-gradient(135deg, #0f0f1a 0%, #1a1a2e 50%, #16213e 100%);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  z-index: 10000;
+}
+
+.boot-content {
+  text-align: center;
+  color: white;
+}
+
+.boot-logo {
+  margin-bottom: 48px;
+}
+
+.logo-icon {
+  font-size: 64px;
+  margin-bottom: 16px;
+}
+
+.boot-logo h1 {
+  font-size: 48px;
+  font-weight: 300;
+  letter-spacing: 8px;
+  margin: 0;
+  background: linear-gradient(90deg, #4facfe 0%, #00f2fe 100%);
+  -webkit-background-clip: text;
+  -webkit-text-fill-color: transparent;
+  background-clip: text;
+}
+
+.boot-progress-container {
+  width: 400px;
+  margin: 0 auto;
+}
+
+.boot-progress-bar {
+  height: 4px;
+  background: rgba(255, 255, 255, 0.1);
+  border-radius: 2px;
+  overflow: hidden;
+  margin-bottom: 16px;
+}
+
+.boot-progress-fill {
+  height: 100%;
+  background: linear-gradient(90deg, #4facfe 0%, #00f2fe 100%);
+  border-radius: 2px;
+}
+
+.boot-message {
+  font-size: 14px;
+  color: rgba(255, 255, 255, 0.7);
+  margin: 0;
+  min-height: 20px;
+}
+
+.boot-phase-indicator {
+  display: flex;
+  gap: 8px;
+  justify-content: center;
+  margin-top: 32px;
+}
+
+.phase-dot {
+  width: 8px;
+  height: 8px;
+  border-radius: 50%;
+  background: rgba(255, 255, 255, 0.2);
+  transition: background 0.3s ease;
+}
+
+.phase-dot.active {
+  background: #4facfe;
+}
+
+.sound-toggle {
+  position: fixed;
+  bottom: 32px;
+  right: 32px;
+  background: rgba(255, 255, 255, 0.1);
+  border: none;
+  width: 48px;
+  height: 48px;
+  border-radius: 50%;
+  cursor: pointer;
+  font-size: 20px;
+  transition: background 0.2s ease;
+}
+
+.sound-toggle:hover {
+  background: rgba(255, 255, 255, 0.2);
+}

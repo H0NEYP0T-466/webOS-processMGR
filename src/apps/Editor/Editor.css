@@ -1,0 +1,134 @@
+.editor {
+  height: 100%;
+  display: flex;
+  flex-direction: column;
+  background: #1a1a2e;
+}
+
+/* Toolbar */
+.editor-toolbar {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 8px 16px;
+  background: rgba(0, 0, 0, 0.2);
+  border-bottom: 1px solid rgba(255, 255, 255, 0.1);
+}
+
+.editor-title {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.file-icon {
+  font-size: 16px;
+}
+
+.file-name {
+  color: white;
+  font-size: 14px;
+  font-weight: 500;
+}
+
+.unsaved-dot {
+  color: #4facfe;
+  font-size: 10px;
+}
+
+.editor-actions {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+}
+
+.last-saved {
+  font-size: 11px;
+  color: rgba(255, 255, 255, 0.4);
+}
+
+.editor-actions button {
+  padding: 6px 12px;
+  border: none;
+  background: rgba(255, 255, 255, 0.1);
+  color: white;
+  border-radius: 6px;
+  cursor: pointer;
+  font-size: 12px;
+  transition: all 0.2s ease;
+}
+
+.editor-actions button:hover:not(:disabled) {
+  background: rgba(79, 172, 254, 0.2);
+  color: #4facfe;
+}
+
+.editor-actions button:disabled {
+  opacity: 0.5;
+  cursor: not-allowed;
+}
+
+.editor-actions button.saving {
+  color: #4facfe;
+}
+
+/* Error */
+.editor-error {
+  padding: 8px 16px;
+  background: rgba(255, 59, 48, 0.2);
+  color: #ff6b6b;
+  font-size: 13px;
+  cursor: pointer;
+}
+
+/* Content */
+.editor-content {
+  flex: 1;
+  overflow: hidden;
+}
+
+.editor-loading {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  height: 100%;
+  color: rgba(255, 255, 255, 0.5);
+}
+
+.editor-content textarea {
+  width: 100%;
+  height: 100%;
+  padding: 16px;
+  border: none;
+  background: transparent;
+  color: rgba(255, 255, 255, 0.9);
+  font-family: 'Monaco', 'Menlo', 'Consolas', monospace;
+  font-size: 14px;
+  line-height: 1.6;
+  resize: none;
+  outline: none;
+  box-sizing: border-box;
+}
+
+.editor-content textarea::placeholder {
+  color: rgba(255, 255, 255, 0.3);
+}
+
+.editor-content textarea:disabled {
+  cursor: not-allowed;
+}
+
+/* Status bar */
+.editor-statusbar {
+  display: flex;
+  gap: 16px;
+  padding: 6px 16px;
+  background: rgba(0, 0, 0, 0.2);
+  border-top: 1px solid rgba(255, 255, 255, 0.1);
+  font-size: 11px;
+  color: rgba(255, 255, 255, 0.4);
+}
+
+.editor-statusbar .modified {
+  color: #4facfe;
+}

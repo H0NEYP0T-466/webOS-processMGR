@@ -1,0 +1,289 @@
+.settings {
+  height: 100%;
+  display: flex;
+  background: #1a1a2e;
+}
+
+/* Sidebar */
+.settings-sidebar {
+  width: 200px;
+  background: rgba(0, 0, 0, 0.2);
+  border-right: 1px solid rgba(255, 255, 255, 0.1);
+  padding: 16px 0;
+}
+
+.settings-sidebar button {
+  display: block;
+  width: 100%;
+  padding: 12px 20px;
+  border: none;
+  background: transparent;
+  color: rgba(255, 255, 255, 0.7);
+  font-size: 14px;
+  text-align: left;
+  cursor: pointer;
+  transition: all 0.2s ease;
+}
+
+.settings-sidebar button:hover {
+  background: rgba(255, 255, 255, 0.05);
+  color: white;
+}
+
+.settings-sidebar button.active {
+  background: rgba(79, 172, 254, 0.1);
+  color: #4facfe;
+  border-left: 3px solid #4facfe;
+}
+
+/* Content */
+.settings-content {
+  flex: 1;
+  padding: 24px;
+  overflow: auto;
+}
+
+.settings-section h2 {
+  margin: 0 0 24px;
+  color: white;
+  font-size: 24px;
+  font-weight: 500;
+}
+
+/* Setting Groups */
+.setting-group {
+  background: rgba(255, 255, 255, 0.03);
+  border-radius: 12px;
+  padding: 20px;
+  margin-bottom: 20px;
+  border: 1px solid rgba(255, 255, 255, 0.05);
+}
+
+.setting-group h3 {
+  margin: 0 0 16px;
+  color: rgba(255, 255, 255, 0.8);
+  font-size: 14px;
+  font-weight: 500;
+}
+
+/* Theme Selector */
+.theme-selector {
+  display: flex;
+  gap: 12px;
+}
+
+.theme-option {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 8px;
+  padding: 20px;
+  border: 2px solid rgba(255, 255, 255, 0.1);
+  border-radius: 12px;
+  background: rgba(255, 255, 255, 0.02);
+  color: white;
+  cursor: pointer;
+  transition: all 0.2s ease;
+}
+
+.theme-option:hover {
+  border-color: rgba(79, 172, 254, 0.3);
+}
+
+.theme-option.active {
+  border-color: #4facfe;
+  background: rgba(79, 172, 254, 0.1);
+}
+
+.theme-icon {
+  font-size: 32px;
+}
+
+/* Wallpaper Grid */
+.wallpaper-grid {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 12px;
+}
+
+.wallpaper-option {
+  aspect-ratio: 16/9;
+  border: 2px solid rgba(255, 255, 255, 0.1);
+  border-radius: 8px;
+  cursor: pointer;
+  position: relative;
+  transition: all 0.2s ease;
+}
+
+.wallpaper-option:hover {
+  border-color: rgba(79, 172, 254, 0.5);
+  transform: scale(1.02);
+}
+
+.wallpaper-option.active {
+  border-color: #4facfe;
+}
+
+.wallpaper-option .check {
+  position: absolute;
+  top: 8px;
+  right: 8px;
+  width: 24px;
+  height: 24px;
+  background: #4facfe;
+  border-radius: 50%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  color: white;
+  font-size: 14px;
+}
+
+/* Setting Row */
+.setting-row {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+}
+
+.setting-info h4 {
+  margin: 0 0 4px;
+  color: white;
+  font-size: 14px;
+  font-weight: 500;
+}
+
+.setting-info p {
+  margin: 0;
+  color: rgba(255, 255, 255, 0.5);
+  font-size: 12px;
+}
+
+/* Toggle */
+.toggle {
+  width: 48px;
+  height: 28px;
+  border-radius: 14px;
+  border: none;
+  background: rgba(255, 255, 255, 0.1);
+  cursor: pointer;
+  position: relative;
+  transition: background 0.2s ease;
+}
+
+.toggle.active {
+  background: #4facfe;
+}
+
+.toggle-knob {
+  position: absolute;
+  top: 2px;
+  left: 2px;
+  width: 24px;
+  height: 24px;
+  background: white;
+  border-radius: 50%;
+  transition: transform 0.2s ease;
+}
+
+.toggle.active .toggle-knob {
+  transform: translateX(20px);
+}
+
+/* Account */
+.account-info {
+  display: flex;
+  align-items: center;
+  gap: 20px;
+  padding: 20px;
+  background: rgba(255, 255, 255, 0.03);
+  border-radius: 12px;
+  border: 1px solid rgba(255, 255, 255, 0.05);
+}
+
+.account-avatar {
+  width: 64px;
+  height: 64px;
+  border-radius: 50%;
+  background: linear-gradient(135deg, #4facfe 0%, #00f2fe 100%);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 32px;
+}
+
+.account-details h3 {
+  margin: 0 0 4px;
+  color: white;
+  font-size: 18px;
+}
+
+.account-details p {
+  margin: 0;
+  color: rgba(255, 255, 255, 0.5);
+  font-size: 13px;
+}
+
+/* About */
+.about-info {
+  text-align: center;
+  padding: 40px 20px;
+}
+
+.about-logo {
+  font-size: 64px;
+  margin-bottom: 16px;
+}
+
+.about-info h3 {
+  margin: 0;
+  color: white;
+  font-size: 28px;
+  font-weight: 300;
+  letter-spacing: 4px;
+}
+
+.version {
+  color: #4facfe;
+  margin: 8px 0 24px;
+}
+
+.description {
+  color: rgba(255, 255, 255, 0.6);
+  max-width: 400px;
+  margin: 0 auto 32px;
+  line-height: 1.6;
+}
+
+.tech-stack {
+  text-align: left;
+  max-width: 300px;
+  margin: 0 auto;
+  padding: 20px;
+  background: rgba(255, 255, 255, 0.03);
+  border-radius: 12px;
+}
+
+.tech-stack h4 {
+  margin: 0 0 12px;
+  color: rgba(255, 255, 255, 0.8);
+  font-size: 13px;
+}
+
+.tech-stack ul {
+  margin: 0;
+  padding: 0;
+  list-style: none;
+}
+
+.tech-stack li {
+  padding: 6px 0;
+  color: rgba(255, 255, 255, 0.6);
+  font-size: 13px;
+}
+
+.tech-stack li::before {
+  content: '→ ';
+  color: #4facfe;
+}
