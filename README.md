@@ -44,7 +44,7 @@ Two tabs for comprehensive process monitoring:
 Emoji-rich logs for all major events:
 ```
 ✅ MongoDB connected: mongodb://***localhost:27017
-🟢 Server started: http://0.0.0.0:8000
+🟢 Server started: http://0.0.0.0:8888
 👤 User registered: username=john
 🔐 Login success: username=john
 🗂️ Folder created: path=/Documents owner=user123
