@@ -96,8 +96,8 @@ docker-compose up -d
 
 # Access the app
 # Frontend: http://localhost
-# Backend: http://localhost:8000
-# API Docs: http://localhost:8000/docs
+# Backend: http://localhost:8888
+# API Docs: http://localhost:8888/docs
 ```
 
 ### Option 2: Manual Setup
@@ -122,7 +122,7 @@ export ADMIN_USER=admin
 export ADMIN_PASS=admin123
 
 # Start the server
-uvicorn app.main:app --host 0.0.0.0 --port 8000 --reload
+uvicorn app.main:app --host 0.0.0.0 --port 8888 --reload
 ```
 
 #### Frontend
@@ -131,9 +131,10 @@ uvicorn app.main:app --host 0.0.0.0 --port 8000 --reload
 # Install dependencies
 npm install
 
-# Set environment variables (or create .env.local)
-export VITE_API_URL=http://localhost:8000
-export VITE_WS_URL=ws://localhost:8000/ws
+# Set environment variables (create .env file in project root)
+# Copy from .env.example and ensure these are set:
+# VITE_API_URL=http://localhost:8888
+# VITE_WS_URL=ws://localhost:8888/ws
 
 # Start development server
 npm run dev
@@ -154,12 +155,12 @@ npm run dev
 | `CORS_ORIGINS` | Allowed CORS origins | `http://localhost:5173` |
 | `LOG_LEVEL` | Logging level | `INFO` |
 
-### Frontend (.env.local)
+### Frontend (.env)
 
 | Variable | Description | Default |
 |----------|-------------|---------|
-| `VITE_API_URL` | Backend API URL | `http://localhost:8000` |
-| `VITE_WS_URL` | WebSocket URL | `ws://localhost:8000/ws` |
+| `VITE_API_URL` | Backend API URL | `http://localhost:8888` |
+| `VITE_WS_URL` | WebSocket URL | `ws://localhost:8888/ws` |
 
 ## API Reference
 
