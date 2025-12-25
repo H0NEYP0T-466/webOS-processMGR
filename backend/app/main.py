@@ -24,7 +24,7 @@ async def lifespan(app: FastAPI):
     await connect_to_database()
     await ensure_admin_user()
     await manager.start_metrics_broadcast()
-    info_emoji("🟢", f"Server started: http://0.0.0.0:8000")
+    info_emoji("🟢", f"Server started: http://0.0.0.0:8888")
     
     yield
     
@@ -150,6 +150,6 @@ if __name__ == "__main__":
     uvicorn.run(
         "app.main:app",
         host="0.0.0.0",
-        port=8000,
+        port=8888,
         reload=True
     )
