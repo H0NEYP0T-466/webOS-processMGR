@@ -1,7 +1,7 @@
 /**
  * Task Manager App - Virtual OS and Host System Processes
  */
-import { useState, useEffect, useCallback } from 'react';
+import { useState, useEffect, useCallback, useMemo } from 'react';
 import { motion } from 'framer-motion';
 import { ResponsiveContainer, Area, AreaChart } from 'recharts';
 import { api } from '../../services/api';
@@ -212,6 +212,7 @@ export function TaskManager() {
             onClick={handleRefresh}
             disabled={loading}
             title="Refresh processes"
+            aria-label="Refresh process list"
           >
             {loading ? '⟳' : '🔄'}
           </button>
@@ -330,6 +331,12 @@ interface VirtualProcessesTabProps {
 }
 
 function VirtualProcessesTab({ processes, onStop, loading }: VirtualProcessesTabProps) {
+  // Memoize CPU and memory calculations
+  const stats = useMemo(() => ({
+    totalCpu: processes.reduce((sum, p) => sum + p.cpu, 0),
+    totalMem: processes.reduce((sum, p) => sum + p.mem, 0)
+  }), [processes]);
+
   if (loading && processes.length === 0) {
     return <div className="tm-loading">Loading processes...</div>;
   }
@@ -386,8 +393,8 @@ function VirtualProcessesTab({ processes, onStop, loading }: VirtualProcessesTab
       <div className="tm-footer">
         <span>Running: {processes.length} virtual processes</span>
         <span className="process-stats">
-          CPU: {processes.reduce((sum, p) => sum + p.cpu, 0).toFixed(1)}% | 
-          Memory: {processes.reduce((sum, p) => sum + p.mem, 0).toFixed(1)}%
+          CPU: {stats.totalCpu.toFixed(1)}% | 
+          Memory: {stats.totalMem.toFixed(1)}%
         </span>
       </div>
     </div>
