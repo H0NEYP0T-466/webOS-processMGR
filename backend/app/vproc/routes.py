@@ -97,3 +97,16 @@ async def delete_process(
         )
     
     return {"message": "Process deleted"}
+
+
+@router.delete("/")
+async def clear_all_processes(
+    current_user: TokenData = Depends(get_current_user)
+):
+    """Clear all virtual processes for the current user.
+    
+    This endpoint is called when the desktop loads to ensure a fresh state,
+    removing any stale processes from previous sessions.
+    """
+    deleted_count = await service.clear_all_processes(current_user.user_id)
+    return {"message": f"Cleared {deleted_count} processes", "deleted_count": deleted_count}
