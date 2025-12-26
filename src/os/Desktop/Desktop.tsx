@@ -72,9 +72,15 @@ export function Desktop() {
 
   // NOTE: Auto-save has been removed - state is only saved on logout to reduce API calls
 
-  // Save state before action (logout, shutdown, restart)
-  // The shouldResetSaving param controls whether to reset isSaving after completion
-  // For logout, we keep the overlay visible until the component unmounts
+  /**
+   * Saves the current desktop state to the backend before performing an action.
+   * 
+   * @param shouldResetSaving - Controls whether to reset the saving overlay after completion.
+   *   - Set to `true` (default) for shutdown/restart where the Desktop component stays mounted
+   *     and needs to reset the overlay.
+   *   - Set to `false` for logout where the component unmounts immediately after,
+   *     keeping the overlay visible until the component is unmounted and the login screen appears.
+   */
   const saveStateBeforeAction = useCallback(async (shouldResetSaving = true) => {
     setIsSaving(true);
     try {
