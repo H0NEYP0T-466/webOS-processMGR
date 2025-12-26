@@ -152,7 +152,7 @@ export function TaskManager() {
     }
   }, [setSystemMetrics]);
 
-  // Periodic refresh for host processes
+  // Periodic refresh for host processes - using 5 second interval to reduce API load
   useEffect(() => {
     const interval = setInterval(() => {
       if (activeTab === 'host') {
@@ -160,7 +160,7 @@ export function TaskManager() {
       } else {
         fetchVirtualProcesses();
       }
-    }, 2000); // Faster refresh interval (2 seconds)
+    }, 5000); // 5 second refresh interval
 
     return () => clearInterval(interval);
   }, [activeTab, fetchHostProcesses, fetchVirtualProcesses]);

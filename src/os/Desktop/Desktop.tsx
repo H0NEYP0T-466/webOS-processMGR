@@ -36,6 +36,7 @@ export function Desktop() {
 
   // Load desktop state on mount (only wallpaper and settings, not previous windows)
   useEffect(() => {
+    let mounted = true;
     const loadState = async () => {
       try {
         // Clear all stale virtual processes from previous sessions
@@ -48,16 +49,19 @@ export function Desktop() {
         }
         
         const state = await api.getDesktopState();
-        loadDesktopState({
-          wallpaper: state.wallpaper,
-          windows: [], // Don't restore previous windows - start fresh
-          settings: state.settings
-        });
+        if (mounted) {
+          loadDesktopState({
+            wallpaper: state.wallpaper,
+            windows: [], // Don't restore previous windows - start fresh
+            settings: state.settings
+          });
+        }
       } catch (error) {
         console.error('Failed to load desktop state:', error);
       }
     };
     loadState();
+    return () => { mounted = false; };
   }, [loadDesktopState]);
 
   // Update time every second
@@ -66,26 +70,18 @@ export function Desktop() {
     return () => clearInterval(interval);
   }, []);
 
-  // Auto-save desktop state (debounced)
-  useEffect(() => {
-    const saveState = async () => {
-      try {
-        const state = getDesktopState();
-        await api.updateDesktopState({
-          ...state,
-          icons: []
-        });
-      } catch (error) {
-        console.error('Failed to save desktop state:', error);
-      }
-    };
+  // NOTE: Auto-save has been removed - state is only saved on logout to reduce API calls
 
-    const timeout = setTimeout(saveState, 2000);
-    return () => clearTimeout(timeout);
-  }, [windows, wallpaper, getDesktopState]);
-
-  // Save state before action
-  const saveStateBeforeAction = useCallback(async () => {
+  /**
+   * Saves the current desktop state to the backend before performing an action.
+   * 
+   * @param shouldResetSaving - Controls whether to reset the saving overlay after completion.
+   *   - Set to `true` (default) for shutdown/restart where the Desktop component stays mounted
+   *     and needs to reset the overlay.
+   *   - Set to `false` for logout where the component unmounts immediately after,
+   *     keeping the overlay visible until the component is unmounted and the login screen appears.
+   */
+  const saveStateBeforeAction = useCallback(async (shouldResetSaving = true) => {
     setIsSaving(true);
     try {
       const state = getDesktopState();
@@ -98,7 +94,9 @@ export function Desktop() {
     } catch (error) {
       console.error('Failed to save state:', error);
     } finally {
-      setIsSaving(false);
+      if (shouldResetSaving) {
+        setIsSaving(false);
+      }
     }
   }, [getDesktopState]);
 
@@ -135,7 +133,8 @@ export function Desktop() {
 
   const handleLogout = useCallback(async () => {
     setShowPowerMenu(false);
-    await saveStateBeforeAction();
+    // Don't reset isSaving - keep overlay visible until component unmounts
+    await saveStateBeforeAction(false);
     logout();
   }, [logout, saveStateBeforeAction]);
 
