@@ -34,6 +34,15 @@ export function Desktop() {
   useEffect(() => {
     const loadState = async () => {
       try {
+        // Clear all stale virtual processes from previous sessions
+        // This ensures Task Manager only shows currently running processes
+        try {
+          await api.clearAllVirtualProcesses();
+        } catch (clearError) {
+          // Log but don't block desktop loading - stale processes are not critical
+          console.warn('Failed to clear stale virtual processes:', clearError);
+        }
+        
         const state = await api.getDesktopState();
         loadDesktopState({
           wallpaper: state.wallpaper,

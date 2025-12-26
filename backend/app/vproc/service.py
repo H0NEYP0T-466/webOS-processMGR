@@ -117,3 +117,27 @@ async def update_process_stats(owner_id: str) -> None:
                 "updated_at": datetime.now(timezone.utc)
             }}
         )
+
+
+async def clear_all_processes(owner_id: str) -> int:
+    """Delete all virtual processes for a user.
+    
+    This is called when the desktop loads to ensure a fresh state,
+    removing any stale processes from previous sessions.
+    
+    Args:
+        owner_id: The user's ID
+        
+    Returns:
+        Number of processes deleted
+    """
+    db = get_database()
+    
+    result = await db.virtual_processes.delete_many({
+        "owner_id": owner_id
+    })
+    
+    if result.deleted_count > 0:
+        info_emoji("🧰", f"Cleared {result.deleted_count} virtual processes for user={owner_id}")
+    
+    return result.deleted_count
