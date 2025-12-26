@@ -17,8 +17,7 @@ function App() {
   const [internalPhase, setInternalPhase] = useState<AppPhase>('boot');
   const { isAuthenticated, setUser, token, theme, systemState, setSystemState } = useOSStore();
 
-  // Derive the actual phase from internal phase and system state
-  // System state overrides internal phase for shutdown/restart
+  // Compute effective phase: system state (shutdown/restarting) takes precedence over internal phase
   const phase = useMemo((): AppPhase => {
     if (systemState === 'shutdown') {
       return 'shutdown';

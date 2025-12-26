@@ -93,7 +93,7 @@ export function Desktop() {
         ...state,
         icons: []
       });
-      // Clear virtual processes on logout/shutdown/restart
+      // Clean up virtual processes to ensure fresh state on next session
       await api.clearAllVirtualProcesses();
     } catch (error) {
       console.error('Failed to save state:', error);

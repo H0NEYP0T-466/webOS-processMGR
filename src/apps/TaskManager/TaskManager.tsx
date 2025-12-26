@@ -16,8 +16,8 @@ type ViewMode = 'table' | 'grid';
 
 // Configuration for grid view display limits
 const GRID_VIEW_LIMIT = 20;
-// Only show loading spinner for first load, not subsequent updates
-const INITIAL_LOAD_DELAY = 100; // ms before showing loading state
+// Delay threshold before showing loading spinner - prevents flash of loading state for fast operations
+const INITIAL_LOAD_DELAY = 100; // ms
 
 export function TaskManager() {
   const [activeTab, setActiveTab] = useState<TabType>('virtual');
