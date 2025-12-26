@@ -259,6 +259,57 @@ webos/
 └── README.md
 ```
 
+## Architecture
+
+### Components
+
+```
+┌─────────────────────────────────────────────────────────────────┐
+│                        Frontend (React)                          │
+│  ┌───────────┐ ┌───────────┐ ┌───────────┐ ┌───────────────┐   │
+│  │ Desktop   │ │   Task    │ │   File    │ │   Settings    │   │
+│  │  Manager  │ │  Manager  │ │  Manager  │ │     App       │   │
+│  └───────────┘ └───────────┘ └───────────┘ └───────────────┘   │
+│        │             │             │              │              │
+│  ┌─────┴─────────────┴─────────────┴──────────────┴─────┐       │
+│  │              Zustand State Store                       │       │
+│  └──────────────────────┬────────────────────────────────┘       │
+│                         │                                         │
+│  ┌──────────────────────┴────────────────────────────────┐       │
+│  │         API Client (REST) / WebSocket Client           │       │
+│  └──────────────────────┬────────────────────────────────┘       │
+└─────────────────────────┼───────────────────────────────────────┘
+                          │
+                          ▼
+┌─────────────────────────────────────────────────────────────────┐
+│                      Backend (FastAPI)                           │
+│  ┌───────────┐ ┌───────────┐ ┌───────────┐ ┌───────────────┐   │
+│  │   Auth    │ │  Virtual  │ │   Host    │ │     File      │   │
+│  │  Routes   │ │  Process  │ │  Process  │ │    System     │   │
+│  └───────────┘ └───────────┘ └───────────┘ └───────────────┘   │
+│        │             │             │              │              │
+│  ┌─────┴─────────────┴─────────────┴──────────────┴─────┐       │
+│  │                  Service Layer                         │       │
+│  └──────────────────────┬────────────────────────────────┘       │
+│                         │                                         │
+│  ┌──────────────────────┼────────────────────────────────┐       │
+│  │    MongoDB (Motor)   │     psutil (Host Monitoring)    │       │
+│  └──────────────────────┴────────────────────────────────┘       │
+└─────────────────────────────────────────────────────────────────┘
+```
+
+### Data Flow
+
+1. **User Authentication**: JWT tokens stored in frontend state, sent with all API requests
+2. **Virtual Processes**: CRUD operations stored in MongoDB, events broadcast via WebSocket
+3. **Host Processes**: Read-only monitoring via psutil, metrics pushed every 1-2 seconds
+4. **File System**: Virtual file tree stored in MongoDB with path-based indexing
+
+### Process Lifecycle
+
+- **Virtual Processes**: Created on app open, tracked in database, cleaned up on app close
+- **Host Processes**: Read-only monitoring, admin-only termination with safety guards
+
 ## Development
 
 ### Running Tests
@@ -266,10 +317,12 @@ webos/
 ```bash
 # Backend tests
 cd backend
-pytest
+source venv/bin/activate
+python -m pytest app/tests -v
 
-# Frontend type check
+# Frontend lint and type check
 npm run lint
+npm run build
 ```
 
 ### Building for Production
@@ -282,6 +335,32 @@ npm run build
 docker build -f docker/backend.Dockerfile -t webos-backend .
 ```
 
+### Code Quality
+
+The project uses:
+- **ESLint** for TypeScript/React linting
+- **pytest** for Python testing
+- **GitHub Actions CI** for automated testing on PR/push
+
+## Troubleshooting
+
+### Common Issues
+
+**MongoDB Connection Failed**
+- Ensure MongoDB is running: `docker ps` or `systemctl status mongod`
+- Check `MONGO_URI` in your `.env` file
+
+**Permission Denied (Host Processes)**
+- Some process information requires elevated privileges
+- Run the backend with appropriate permissions for full process access
+
+**WebSocket Connection Failed**
+- Check `VITE_WS_URL` in frontend `.env`
+- Ensure backend is running and accessible
+
+**CORS Errors**
+- Update `CORS_ORIGINS` in backend `.env` to include your frontend URL
+
 ## Security Considerations
 
 - Change `JWT_SECRET` in production
@@ -290,11 +369,15 @@ docker build -f docker/backend.Dockerfile -t webos-backend .
 - Host process termination is admin-only
 - Critical PIDs (0, 1, self) are protected
 
+See [SECURITY.md](SECURITY.md) for more details.
+
 ## License
 
 MIT
 
 ## Contributing
+
+See [CONTRIBUTING.md](CONTRIBUTING.md) for guidelines.
 
 1. Fork the repository
 2. Create a feature branch
