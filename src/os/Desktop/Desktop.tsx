@@ -30,14 +30,14 @@ export function Desktop() {
   const [showAppLauncher, setShowAppLauncher] = useState(false);
   const [time, setTime] = useState(new Date());
 
-  // Load desktop state on mount
+  // Load desktop state on mount (only wallpaper and settings, not previous windows)
   useEffect(() => {
     const loadState = async () => {
       try {
         const state = await api.getDesktopState();
         loadDesktopState({
           wallpaper: state.wallpaper,
-          windows: state.windows,
+          windows: [], // Don't restore previous windows - start fresh
           settings: state.settings
         });
       } catch (error) {
