@@ -2,7 +2,7 @@
  * Desktop Component - Main desktop environment
  */
 import { useEffect, useCallback, useState } from 'react';
-import { motion } from 'framer-motion';
+import { motion, AnimatePresence } from 'framer-motion';
 import { useOSStore } from '../../state/osStore';
 import { api } from '../../services/api';
 import { WindowManager } from '../WindowManager';
@@ -24,11 +24,15 @@ export function Desktop() {
     openWindow, 
     loadDesktopState,
     getDesktopState,
-    logout
+    logout,
+    shutdown,
+    restart
   } = useOSStore();
   
   const [showAppLauncher, setShowAppLauncher] = useState(false);
+  const [showPowerMenu, setShowPowerMenu] = useState(false);
   const [time, setTime] = useState(new Date());
+  const [isSaving, setIsSaving] = useState(false);
 
   // Load desktop state on mount (only wallpaper and settings, not previous windows)
   useEffect(() => {
@@ -80,6 +84,24 @@ export function Desktop() {
     return () => clearTimeout(timeout);
   }, [windows, wallpaper, getDesktopState]);
 
+  // Save state before action
+  const saveStateBeforeAction = useCallback(async () => {
+    setIsSaving(true);
+    try {
+      const state = getDesktopState();
+      await api.updateDesktopState({
+        ...state,
+        icons: []
+      });
+      // Clear virtual processes on logout/shutdown/restart
+      await api.clearAllVirtualProcesses();
+    } catch (error) {
+      console.error('Failed to save state:', error);
+    } finally {
+      setIsSaving(false);
+    }
+  }, [getDesktopState]);
+
   const handleOpenApp = useCallback(async (appId: string) => {
     const existingWindow = windows.find(w => w.app === appId);
     
@@ -111,9 +133,23 @@ export function Desktop() {
     setShowAppLauncher(false);
   }, [windows, openWindow]);
 
-  const handleLogout = useCallback(() => {
+  const handleLogout = useCallback(async () => {
+    setShowPowerMenu(false);
+    await saveStateBeforeAction();
     logout();
-  }, [logout]);
+  }, [logout, saveStateBeforeAction]);
+
+  const handleShutdown = useCallback(async () => {
+    setShowPowerMenu(false);
+    await saveStateBeforeAction();
+    shutdown();
+  }, [shutdown, saveStateBeforeAction]);
+
+  const handleRestart = useCallback(async () => {
+    setShowPowerMenu(false);
+    await saveStateBeforeAction();
+    restart();
+  }, [restart, saveStateBeforeAction]);
 
   const formatTime = (date: Date) => {
     return date.toLocaleTimeString([], { hour: '2-digit', minute: '2-digit' });
@@ -133,6 +169,23 @@ export function Desktop() {
       className="desktop"
       style={wallpaperStyle}
     >
+      {/* Saving overlay */}
+      <AnimatePresence>
+        {isSaving && (
+          <motion.div
+            className="saving-overlay"
+            initial={{ opacity: 0 }}
+            animate={{ opacity: 1 }}
+            exit={{ opacity: 0 }}
+          >
+            <div className="saving-content">
+              <span className="saving-spinner">⟳</span>
+              <span>Saving state...</span>
+            </div>
+          </motion.div>
+        )}
+      </AnimatePresence>
+
       {/* Desktop Icons */}
       <div className="desktop-icons">
         {APPS.map((app, index) => (
@@ -202,9 +255,18 @@ export function Desktop() {
             </div>
           )}
           
-          <div className="user-info" onClick={handleLogout} title="Click to logout">
+          <div className="user-info">
             <span className="username">👤 {user?.username}</span>
           </div>
+          
+          {/* Power button */}
+          <button 
+            className="power-btn"
+            onClick={() => setShowPowerMenu(!showPowerMenu)}
+            title="Power options"
+          >
+            ⏻
+          </button>
           
           <div className="clock">
             <span className="time">{formatTime(time)}</span>
@@ -213,37 +275,70 @@ export function Desktop() {
         </div>
       </motion.div>
 
-      {/* App Launcher Popup */}
-      {showAppLauncher && (
-        <motion.div 
-          className="app-launcher"
-          initial={{ opacity: 0, y: 20 }}
-          animate={{ opacity: 1, y: 0 }}
-          exit={{ opacity: 0, y: 20 }}
-        >
-          <div className="launcher-header">
-            <h3>Applications</h3>
-          </div>
-          <div className="launcher-apps">
-            {APPS.map(app => (
-              <button
-                key={app.id}
-                className="launcher-app"
-                onClick={() => handleOpenApp(app.id)}
-              >
-                <span className="launcher-app-icon">{app.icon}</span>
-                <span className="launcher-app-name">{app.name}</span>
-              </button>
-            ))}
-          </div>
-        </motion.div>
-      )}
+      {/* Power Menu */}
+      <AnimatePresence>
+        {showPowerMenu && (
+          <motion.div 
+            className="power-menu"
+            initial={{ opacity: 0, y: 10 }}
+            animate={{ opacity: 1, y: 0 }}
+            exit={{ opacity: 0, y: 10 }}
+          >
+            <button className="power-menu-item" onClick={handleLogout}>
+              <span className="power-menu-icon">🚪</span>
+              <span className="power-menu-text">Logout</span>
+              <span className="power-menu-hint">Save state & sign out</span>
+            </button>
+            <button className="power-menu-item" onClick={handleRestart}>
+              <span className="power-menu-icon">🔄</span>
+              <span className="power-menu-text">Restart</span>
+              <span className="power-menu-hint">Save state & reboot</span>
+            </button>
+            <button className="power-menu-item danger" onClick={handleShutdown}>
+              <span className="power-menu-icon">⏻</span>
+              <span className="power-menu-text">Shutdown</span>
+              <span className="power-menu-hint">Save state & power off</span>
+            </button>
+          </motion.div>
+        )}
+      </AnimatePresence>
 
-      {/* Click backdrop to close launcher */}
-      {showAppLauncher && (
+      {/* App Launcher Popup */}
+      <AnimatePresence>
+        {showAppLauncher && (
+          <motion.div 
+            className="app-launcher"
+            initial={{ opacity: 0, y: 20 }}
+            animate={{ opacity: 1, y: 0 }}
+            exit={{ opacity: 0, y: 20 }}
+          >
+            <div className="launcher-header">
+              <h3>Applications</h3>
+            </div>
+            <div className="launcher-apps">
+              {APPS.map(app => (
+                <button
+                  key={app.id}
+                  className="launcher-app"
+                  onClick={() => handleOpenApp(app.id)}
+                >
+                  <span className="launcher-app-icon">{app.icon}</span>
+                  <span className="launcher-app-name">{app.name}</span>
+                </button>
+              ))}
+            </div>
+          </motion.div>
+        )}
+      </AnimatePresence>
+
+      {/* Click backdrop to close menus */}
+      {(showAppLauncher || showPowerMenu) && (
         <div 
           className="launcher-backdrop"
-          onClick={() => setShowAppLauncher(false)}
+          onClick={() => {
+            setShowAppLauncher(false);
+            setShowPowerMenu(false);
+          }}
         />
       )}
     </div>

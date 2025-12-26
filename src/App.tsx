@@ -1,20 +1,33 @@
 /**
  * WebOS - Web-based Operating System
  */
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useCallback, useMemo } from 'react';
 import { Boot } from './os/Boot';
 import { Login } from './os/Login';
 import { Desktop } from './os/Desktop';
+import { Shutdown } from './os/Shutdown';
 import { useOSStore } from './state/osStore';
 import { api } from './services/api';
 import { wsClient } from './services/ws';
 import './App.css';
 
-type AppPhase = 'boot' | 'login' | 'desktop';
+type AppPhase = 'boot' | 'login' | 'desktop' | 'shutdown';
 
 function App() {
-  const [phase, setPhase] = useState<AppPhase>('boot');
-  const { isAuthenticated, setUser, token, theme } = useOSStore();
+  const [internalPhase, setInternalPhase] = useState<AppPhase>('boot');
+  const { isAuthenticated, setUser, token, theme, systemState, setSystemState } = useOSStore();
+
+  // Derive the actual phase from internal phase and system state
+  // System state overrides internal phase for shutdown/restart
+  const phase = useMemo((): AppPhase => {
+    if (systemState === 'shutdown') {
+      return 'shutdown';
+    }
+    if (systemState === 'restarting') {
+      return 'boot';
+    }
+    return internalPhase;
+  }, [systemState, internalPhase]);
 
   // Apply theme to document
   useEffect(() => {
@@ -50,20 +63,35 @@ function App() {
   }, [token]);
 
   // Handle boot complete
-  const handleBootComplete = () => {
-    if (isAuthenticated) {
-      setPhase('desktop');
-    } else {
-      setPhase('login');
+  const handleBootComplete = useCallback(() => {
+    // Reset system state if we were restarting
+    if (systemState === 'restarting') {
+      setSystemState('running');
     }
-  };
+    
+    if (isAuthenticated) {
+      setInternalPhase('desktop');
+    } else {
+      setInternalPhase('login');
+    }
+  }, [isAuthenticated, systemState, setSystemState]);
 
   // Handle login success
-  const handleLoginSuccess = () => {
-    setPhase('desktop');
-  };
+  const handleLoginSuccess = useCallback(() => {
+    setInternalPhase('desktop');
+  }, []);
+
+  // Handle boot up from shutdown state
+  const handleBootUp = useCallback(() => {
+    setSystemState('running');
+    setInternalPhase('boot');
+  }, [setSystemState]);
 
   // Render based on phase
+  if (phase === 'shutdown') {
+    return <Shutdown onBootUp={handleBootUp} />;
+  }
+
   if (phase === 'boot') {
     return <Boot onComplete={handleBootComplete} skipBoot={false} />;
   }
