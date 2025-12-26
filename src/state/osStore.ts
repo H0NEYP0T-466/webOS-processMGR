@@ -16,6 +16,9 @@ interface OSState {
   token: string | null;
   isAuthenticated: boolean;
   
+  // System state
+  systemState: 'running' | 'shutdown' | 'restarting';
+  
   // Boot
   bootPhase: 'bios' | 'loading' | 'services' | 'ready' | 'done';
   bootProgress: number;
@@ -41,6 +44,11 @@ interface OSState {
   // Actions
   setUser: (user: User | null, token: string | null) => void;
   logout: () => void;
+  
+  // System state actions
+  setSystemState: (state: 'running' | 'shutdown' | 'restarting') => void;
+  shutdown: () => void;
+  restart: () => void;
   
   setBootPhase: (phase: OSState['bootPhase']) => void;
   setBootProgress: (progress: number, message: string) => void;
@@ -89,6 +97,8 @@ export const useOSStore = create<OSState>((set, get) => ({
   token: null,
   isAuthenticated: false,
   
+  systemState: 'running',
+  
   bootPhase: 'bios',
   bootProgress: 0,
   bootMessage: 'Initializing...',
@@ -120,6 +130,27 @@ export const useOSStore = create<OSState>((set, get) => ({
     windows: [],
     fileTree: [],
     virtualProcesses: []
+  }),
+  
+  // System state actions
+  setSystemState: (systemState) => set({ systemState }),
+  
+  shutdown: () => set({
+    systemState: 'shutdown',
+    windows: [],
+    virtualProcesses: [],
+    bootPhase: 'bios',
+    bootProgress: 0,
+    bootMessage: 'Initializing...'
+  }),
+  
+  restart: () => set({
+    systemState: 'restarting',
+    windows: [],
+    virtualProcesses: [],
+    bootPhase: 'bios',
+    bootProgress: 0,
+    bootMessage: 'Initializing...'
   }),
   
   // Boot actions

@@ -1,7 +1,8 @@
 /**
  * Task Manager App - Virtual OS and Host System Processes
+ * Optimized for fast initial render and responsive updates
  */
-import { useState, useEffect, useCallback } from 'react';
+import { useState, useEffect, useCallback, useRef, useMemo } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { ResponsiveContainer, Area, AreaChart, XAxis, Tooltip } from 'recharts';
 import { api } from '../../services/api';
@@ -15,6 +16,8 @@ type ViewMode = 'table' | 'grid';
 
 // Configuration for grid view display limits
 const GRID_VIEW_LIMIT = 20;
+// Delay threshold before showing loading spinner - prevents flash of loading state for fast operations
+const INITIAL_LOAD_DELAY = 100; // ms
 
 export function TaskManager() {
   const [activeTab, setActiveTab] = useState<TabType>('virtual');
@@ -25,7 +28,7 @@ export function TaskManager() {
   const [sortField, setSortField] = useState<string>('cpu_percent');
   const [sortDir, setSortDir] = useState<'asc' | 'desc'>('desc');
   const [searchTerm, setSearchTerm] = useState('');
-  const [loading, setLoading] = useState(false);
+  const [initialLoading, setInitialLoading] = useState(true);
   const [error, setError] = useState<string | null>(null);
   const [selectedProcess, setSelectedProcess] = useState<number | string | null>(null);
   const [confirmTerminate, setConfirmTerminate] = useState<string | null>(null);
@@ -33,41 +36,49 @@ export function TaskManager() {
   const [viewMode] = useState<ViewMode>('table');
   const [showDetailsPanel, setShowDetailsPanel] = useState(false);
   
+  // Use refs to track if component is mounted and avoid state updates after unmount
+  const isMounted = useRef(true);
+  const hasLoadedOnce = useRef(false);
+  
   const { setSystemMetrics, windows, closeWindow } = useOSStore();
 
-  // Fetch virtual processes
+  // Fetch virtual processes - optimized to not block UI
   const fetchVirtualProcesses = useCallback(async () => {
     try {
       const data = await api.listVirtualProcesses();
-      setVirtualProcesses(data.processes);
+      if (isMounted.current) {
+        setVirtualProcesses(data.processes);
+      }
     } catch (err) {
       console.error('Failed to fetch virtual processes:', err);
     }
   }, []);
 
-  // Fetch host processes
+  // Fetch host processes - optimized to not block UI
   const fetchHostProcesses = useCallback(async () => {
-    setLoading(true);
     try {
       const [procData, metricsData] = await Promise.all([
         api.listHostProcesses(),
         api.getHostMetrics()
       ]);
-      setHostProcesses(procData.processes);
-      setMetrics(metricsData);
-      setSystemMetrics(metricsData);
       
-      // Add to history
-      const now = new Date().toLocaleTimeString();
-      setMetricsHistory(prev => {
-        const newHistory = [...prev, { cpu: metricsData.cpu_percent, mem: metricsData.memory_percent, time: now }];
-        return newHistory.slice(-30); // Keep last 30 data points
-      });
+      if (isMounted.current) {
+        setHostProcesses(procData.processes);
+        setMetrics(metricsData);
+        setSystemMetrics(metricsData);
+        
+        // Add to history
+        const now = new Date().toLocaleTimeString();
+        setMetricsHistory(prev => {
+          const newHistory = [...prev, { cpu: metricsData.cpu_percent, mem: metricsData.memory_percent, time: now }];
+          return newHistory.slice(-30); // Keep last 30 data points
+        });
+      }
     } catch (err) {
-      setError('Failed to fetch host processes');
+      if (isMounted.current) {
+        setError('Failed to fetch host processes');
+      }
       console.error('Failed to fetch host processes:', err);
-    } finally {
-      setLoading(false);
     }
   }, [setSystemMetrics]);
 
@@ -79,13 +90,46 @@ export function TaskManager() {
     } else {
       await fetchVirtualProcesses();
     }
-    setTimeout(() => setIsRefreshing(false), 500);
+    setTimeout(() => {
+      if (isMounted.current) {
+        setIsRefreshing(false);
+      }
+    }, 300);
   }, [activeTab, fetchHostProcesses, fetchVirtualProcesses]);
 
-  // Initial fetch
+  // Cleanup on unmount
   useEffect(() => {
-    fetchVirtualProcesses();
-    fetchHostProcesses();
+    return () => {
+      isMounted.current = false;
+    };
+  }, []);
+
+  // Initial fetch - optimized for fast display
+  useEffect(() => {
+    // Start fetching immediately without waiting
+    const loadData = async () => {
+      // Show loading only if it takes longer than INITIAL_LOAD_DELAY
+      const loadingTimer = setTimeout(() => {
+        if (!hasLoadedOnce.current && isMounted.current) {
+          setInitialLoading(true);
+        }
+      }, INITIAL_LOAD_DELAY);
+      
+      // Fetch both in parallel
+      await Promise.all([
+        fetchVirtualProcesses(),
+        fetchHostProcesses()
+      ]);
+      
+      clearTimeout(loadingTimer);
+      
+      if (isMounted.current) {
+        hasLoadedOnce.current = true;
+        setInitialLoading(false);
+      }
+    };
+    
+    loadData();
   }, [fetchVirtualProcesses, fetchHostProcesses]);
 
   // Subscribe to metrics updates
@@ -159,32 +203,33 @@ export function TaskManager() {
     }
   };
 
-  // Sort and filter processes
-  const filteredVirtualProcesses = virtualProcesses
-    .filter(p =>
+  // Sort and filter processes - memoized for better performance
+  const filteredVirtualProcesses = useMemo(() => 
+    virtualProcesses.filter(p =>
       searchTerm === '' ||
       p.app.toLowerCase().includes(searchTerm.toLowerCase()) ||
       p.id.includes(searchTerm)
-    );
+    ), [virtualProcesses, searchTerm]);
 
-  const filteredHostProcesses = hostProcesses
-    .filter(p => 
-      searchTerm === '' ||
-      p.name.toLowerCase().includes(searchTerm.toLowerCase()) ||
-      p.pid.toString().includes(searchTerm)
-    )
-    .sort((a, b) => {
-      const aVal = (a as unknown as Record<string, unknown>)[sortField];
-      const bVal = (b as unknown as Record<string, unknown>)[sortField];
-      
-      if (typeof aVal === 'number' && typeof bVal === 'number') {
-        return sortDir === 'asc' ? aVal - bVal : bVal - aVal;
-      }
-      
-      const aStr = String(aVal || '');
-      const bStr = String(bVal || '');
-      return sortDir === 'asc' ? aStr.localeCompare(bStr) : bStr.localeCompare(aStr);
-    });
+  const filteredHostProcesses = useMemo(() => 
+    hostProcesses
+      .filter(p => 
+        searchTerm === '' ||
+        p.name.toLowerCase().includes(searchTerm.toLowerCase()) ||
+        p.pid.toString().includes(searchTerm)
+      )
+      .sort((a, b) => {
+        const aVal = (a as unknown as Record<string, unknown>)[sortField];
+        const bVal = (b as unknown as Record<string, unknown>)[sortField];
+        
+        if (typeof aVal === 'number' && typeof bVal === 'number') {
+          return sortDir === 'asc' ? aVal - bVal : bVal - aVal;
+        }
+        
+        const aStr = String(aVal || '');
+        const bStr = String(bVal || '');
+        return sortDir === 'asc' ? aStr.localeCompare(bStr) : bStr.localeCompare(aStr);
+      }), [hostProcesses, searchTerm, sortField, sortDir]);
 
   const handleSort = (field: string) => {
     if (sortField === field) {
@@ -256,11 +301,11 @@ export function TaskManager() {
           <button 
             className={`tm-refresh-btn ${isRefreshing ? 'refreshing' : ''}`}
             onClick={handleRefresh}
-            disabled={loading || isRefreshing}
+            disabled={initialLoading || isRefreshing}
             title="Refresh processes"
             aria-label="Refresh process list"
           >
-            {loading || isRefreshing ? '⟳' : '🔄'}
+            {initialLoading || isRefreshing ? '⟳' : '🔄'}
           </button>
         </div>
       </div>
@@ -298,7 +343,7 @@ export function TaskManager() {
               <VirtualProcessesTab
                 processes={filteredVirtualProcesses}
                 onStop={handleStopVirtualProcess}
-                loading={loading}
+                loading={initialLoading}
                 viewMode={viewMode}
                 selectedProcess={selectedProcess}
                 onSelect={(id) => {
@@ -447,7 +492,7 @@ export function TaskManager() {
                 onSort={handleSort}
                 sortField={sortField}
                 sortDir={sortDir}
-                loading={loading}
+                loading={initialLoading}
                 viewMode={viewMode}
                 selectedProcess={selectedProcess}
                 onSelect={(pid) => {

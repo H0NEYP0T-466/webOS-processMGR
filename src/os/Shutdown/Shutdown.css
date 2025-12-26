@@ -1,0 +1,67 @@
+.shutdown-screen {
+  position: fixed;
+  top: 0;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  background: linear-gradient(135deg, #0a0a12 0%, #0f0f1a 50%, #0a0a12 100%);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  z-index: 10000;
+}
+
+.shutdown-content {
+  text-align: center;
+  color: white;
+}
+
+.shutdown-clock {
+  margin-bottom: 60px;
+}
+
+.clock-time {
+  font-size: 96px;
+  font-weight: 200;
+  letter-spacing: 4px;
+  color: white;
+  text-shadow: 0 0 30px rgba(79, 172, 254, 0.3);
+}
+
+.clock-date {
+  font-size: 24px;
+  font-weight: 300;
+  color: rgba(255, 255, 255, 0.6);
+  margin-top: 8px;
+}
+
+.boot-button {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 12px;
+  padding: 16px 48px;
+  border: none;
+  border-radius: 50px;
+  background: linear-gradient(135deg, #4facfe 0%, #00f2fe 100%);
+  color: white;
+  font-size: 18px;
+  font-weight: 500;
+  cursor: pointer;
+  transition: transform 0.2s ease, box-shadow 0.2s ease;
+  margin: 0 auto;
+}
+
+.boot-icon {
+  font-size: 24px;
+}
+
+.boot-text {
+  letter-spacing: 2px;
+}
+
+.shutdown-hint {
+  margin-top: 24px;
+  font-size: 14px;
+  color: rgba(255, 255, 255, 0.4);
+}
