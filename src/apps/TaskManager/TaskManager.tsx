@@ -1,7 +1,7 @@
 /**
  * Task Manager App - Virtual OS and Host System Processes
  */
-import { useState, useEffect, useCallback, useMemo } from 'react';
+import { useState, useEffect, useCallback } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { ResponsiveContainer, Area, AreaChart, XAxis, Tooltip } from 'recharts';
 import { api } from '../../services/api';
@@ -33,7 +33,7 @@ export function TaskManager() {
   const [viewMode] = useState<ViewMode>('table');
   const [showDetailsPanel, setShowDetailsPanel] = useState(false);
   
-  const { setSystemMetrics } = useOSStore();
+  const { setSystemMetrics, windows, closeWindow } = useOSStore();
 
   // Fetch virtual processes
   const fetchVirtualProcesses = useCallback(async () => {
@@ -130,7 +130,26 @@ export function TaskManager() {
     if (confirmTerminate === null) return;
     
     try {
-      await api.stopVirtualProcess(confirmTerminate);
+      // Find the process to get its app and metadata
+      const processToStop = virtualProcesses.find(p => p.id === confirmTerminate);
+      
+      await api.deleteVirtualProcess(confirmTerminate);
+      
+      // Close the associated window if it exists
+      if (processToStop) {
+        // Try to find by window_id in metadata first
+        const windowId = processToStop.metadata?.window_id;
+        if (typeof windowId === 'string') {
+          closeWindow(windowId);
+        } else {
+          // Fallback: find window by app name (if there's only one instance)
+          const appWindows = windows.filter(w => w.app === processToStop.app);
+          if (appWindows.length === 1 && appWindows[0]) {
+            closeWindow(appWindows[0].window_id);
+          }
+        }
+      }
+      
       fetchVirtualProcesses();
       setError(null);
     } catch (err) {
@@ -532,12 +551,6 @@ interface VirtualProcessesTabProps {
 }
 
 function VirtualProcessesTab({ processes, onStop, loading, viewMode, selectedProcess, onSelect }: VirtualProcessesTabProps) {
-  // Memoize CPU and memory calculations
-  const stats = useMemo(() => ({
-    totalCpu: processes.reduce((sum, p) => sum + p.cpu, 0),
-    totalMem: processes.reduce((sum, p) => sum + p.mem, 0)
-  }), [processes]);
-
   if (loading && processes.length === 0) {
     return (
       <motion.div 
@@ -593,12 +606,8 @@ function VirtualProcessesTab({ processes, onStop, loading, viewMode, selectedPro
               <h4 className="grid-card-title">{proc.app}</h4>
               <div className="grid-card-stats">
                 <div className="stat">
-                  <span className="stat-label">CPU</span>
-                  <span className="stat-value">{proc.cpu.toFixed(1)}%</span>
-                </div>
-                <div className="stat">
-                  <span className="stat-label">MEM</span>
-                  <span className="stat-value">{proc.mem.toFixed(1)}%</span>
+                  <span className="stat-label">Started</span>
+                  <span className="stat-value">{new Date(proc.started_at).toLocaleTimeString()}</span>
                 </div>
               </div>
               {proc.status === 'running' && (
@@ -626,8 +635,6 @@ function VirtualProcessesTab({ processes, onStop, loading, viewMode, selectedPro
             <th>ID</th>
             <th>App</th>
             <th>Status</th>
-            <th>CPU %</th>
-            <th>Memory %</th>
             <th>Started</th>
             <th>Actions</th>
           </tr>
@@ -662,26 +669,6 @@ function VirtualProcessesTab({ processes, onStop, loading, viewMode, selectedPro
                     {proc.status}
                   </motion.span>
                 </td>
-                <td>
-                  <div className="mini-bar">
-                    <motion.div 
-                      className="mini-bar-fill cpu"
-                      initial={{ width: 0 }}
-                      animate={{ width: `${Math.min(100, proc.cpu)}%` }}
-                    />
-                    <span>{proc.cpu.toFixed(1)}%</span>
-                  </div>
-                </td>
-                <td>
-                  <div className="mini-bar">
-                    <motion.div 
-                      className="mini-bar-fill mem"
-                      initial={{ width: 0 }}
-                      animate={{ width: `${Math.min(100, proc.mem)}%` }}
-                    />
-                    <span>{proc.mem.toFixed(1)}%</span>
-                  </div>
-                </td>
                 <td className="time-cell">{new Date(proc.started_at).toLocaleTimeString()}</td>
                 <td>
                   {proc.status === 'running' && (
@@ -702,10 +689,6 @@ function VirtualProcessesTab({ processes, onStop, loading, viewMode, selectedPro
       </table>
       <div className="tm-footer">
         <span>Running: {processes.length} virtual processes</span>
-        <span className="process-stats">
-          CPU: {stats.totalCpu.toFixed(1)}% | 
-          Memory: {stats.totalMem.toFixed(1)}%
-        </span>
       </div>
     </div>
   );
@@ -1021,32 +1004,6 @@ function ProcessDetails({ process, type }: ProcessDetailsProps) {
         <div className="detail-row">
           <span className="detail-label">Started</span>
           <span className="detail-value">{new Date(proc.started_at).toLocaleString()}</span>
-        </div>
-      </div>
-      
-      <div className="detail-section">
-        <h4>Resource Usage</h4>
-        <div className="detail-row">
-          <span className="detail-label">CPU</span>
-          <div className="detail-bar">
-            <motion.div 
-              className="detail-bar-fill cpu"
-              initial={{ width: 0 }}
-              animate={{ width: `${Math.min(100, proc.cpu)}%` }}
-            />
-            <span>{proc.cpu.toFixed(2)}%</span>
-          </div>
-        </div>
-        <div className="detail-row">
-          <span className="detail-label">Memory</span>
-          <div className="detail-bar">
-            <motion.div 
-              className="detail-bar-fill mem"
-              initial={{ width: 0 }}
-              animate={{ width: `${Math.min(100, proc.mem)}%` }}
-            />
-            <span>{proc.mem.toFixed(2)}%</span>
-          </div>
         </div>
       </div>
 
