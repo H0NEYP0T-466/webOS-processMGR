@@ -2,8 +2,8 @@
  * Task Manager App - Virtual OS and Host System Processes
  */
 import { useState, useEffect, useCallback, useMemo } from 'react';
-import { motion } from 'framer-motion';
-import { ResponsiveContainer, Area, AreaChart } from 'recharts';
+import { motion, AnimatePresence } from 'framer-motion';
+import { ResponsiveContainer, Area, AreaChart, XAxis, Tooltip } from 'recharts';
 import { api } from '../../services/api';
 import { wsClient, WS_TOPICS } from '../../services/ws';
 import { useOSStore } from '../../state/osStore';
@@ -30,7 +30,7 @@ export function TaskManager() {
   const [selectedProcess, setSelectedProcess] = useState<number | string | null>(null);
   const [confirmTerminate, setConfirmTerminate] = useState<string | null>(null);
   const [isRefreshing, setIsRefreshing] = useState(false);
-  const [viewMode, setViewMode] = useState<ViewMode>('table');
+  const [viewMode] = useState<ViewMode>('table');
   const [showDetailsPanel, setShowDetailsPanel] = useState(false);
   
   const { setSystemMetrics } = useOSStore();
@@ -119,15 +119,6 @@ export function TaskManager() {
     }, 2000); // Faster refresh interval (2 seconds)
 
     return () => clearInterval(interval);
-  }, [activeTab, fetchHostProcesses, fetchVirtualProcesses]);
-
-  // Manual refresh handler
-  const handleRefresh = useCallback(() => {
-    if (activeTab === 'host') {
-      fetchHostProcesses();
-    } else {
-      fetchVirtualProcesses();
-    }
   }, [activeTab, fetchHostProcesses, fetchVirtualProcesses]);
 
   // Stop virtual process
@@ -244,13 +235,13 @@ export function TaskManager() {
             onChange={(e) => setSearchTerm(e.target.value)}
           />
           <button 
-            className="tm-refresh-btn"
+            className={`tm-refresh-btn ${isRefreshing ? 'refreshing' : ''}`}
             onClick={handleRefresh}
-            disabled={loading}
+            disabled={loading || isRefreshing}
             title="Refresh processes"
             aria-label="Refresh process list"
           >
-            {loading ? '⟳' : '🔄'}
+            {loading || isRefreshing ? '⟳' : '🔄'}
           </button>
         </div>
       </div>
@@ -540,7 +531,7 @@ interface VirtualProcessesTabProps {
   onSelect: (id: string | null) => void;
 }
 
-function VirtualProcessesTab({ processes, onStop, loading }: VirtualProcessesTabProps) {
+function VirtualProcessesTab({ processes, onStop, loading, viewMode, selectedProcess, onSelect }: VirtualProcessesTabProps) {
   // Memoize CPU and memory calculations
   const stats = useMemo(() => ({
     totalCpu: processes.reduce((sum, p) => sum + p.cpu, 0),
