@@ -19,9 +19,6 @@ from .hproc.routes import router as hproc_router
 from .ws.manager import manager
 from .ws.topics import ALL_TOPICS
 
-# Application start time for uptime tracking
-_app_start_time: datetime | None = None
-
 
 class RequestTimingMiddleware(BaseHTTPMiddleware):
     """Middleware to add request timing instrumentation."""
@@ -34,8 +31,8 @@ class RequestTimingMiddleware(BaseHTTPMiddleware):
         # Add timing header
         response.headers["X-Process-Time-Ms"] = f"{process_time:.2f}"
         
-        # Log slow requests (>500ms)
-        if process_time > 500:
+        # Log slow requests (threshold configurable via settings)
+        if process_time > settings.SLOW_REQUEST_THRESHOLD_MS:
             logger.warning(f"⚠️ Slow request: {request.method} {request.url.path} took {process_time:.2f}ms")
         
         return response
@@ -44,8 +41,8 @@ class RequestTimingMiddleware(BaseHTTPMiddleware):
 @asynccontextmanager
 async def lifespan(app: FastAPI):
     """Application lifespan - startup and shutdown events."""
-    global _app_start_time
-    _app_start_time = datetime.now(timezone.utc)
+    # Store start time in app state
+    app.state.start_time = datetime.now(timezone.utc)
     
     # Startup
     db_connected = False
@@ -97,7 +94,7 @@ async def ensure_admin_user():
 app = FastAPI(
     title="WebOS API",
     description="Web-based Operating System with Process Monitoring",
-    version="1.0.0",
+    version=settings.APP_VERSION,
     lifespan=lifespan
 )
 
@@ -140,7 +137,7 @@ app.include_router(hproc_router)
 
 
 @app.get("/health")
-async def health_check():
+async def health_check(request: Request):
     """
     Health check endpoint with detailed status.
     
@@ -165,10 +162,11 @@ async def health_check():
     except Exception:
         db_status = "error"
     
-    # Calculate uptime
+    # Calculate uptime from app state
     uptime_seconds = None
-    if _app_start_time:
-        uptime_seconds = (datetime.now(timezone.utc) - _app_start_time).total_seconds()
+    start_time = getattr(request.app.state, 'start_time', None)
+    if start_time:
+        uptime_seconds = (datetime.now(timezone.utc) - start_time).total_seconds()
     
     # Get WebSocket connection count
     ws_connections = sum(len(conns) for conns in manager.active_connections.values())
@@ -185,7 +183,7 @@ async def health_check():
             "active_connections": ws_connections
         },
         "uptime_seconds": round(uptime_seconds, 2) if uptime_seconds else None,
-        "version": "1.0.0",
+        "version": settings.APP_VERSION,
         "timestamp": datetime.now(timezone.utc).isoformat()
     }
 

@@ -22,6 +22,12 @@ class Settings(BaseSettings):
     CORS_ORIGINS: str = "*"
     LOG_LEVEL: str = "INFO"
     
+    # Performance monitoring
+    SLOW_REQUEST_THRESHOLD_MS: float = 500.0
+    
+    # Application info
+    APP_VERSION: str = "1.0.0"
+    
     class Config:
         env_file = ".env"
         extra = "ignore"

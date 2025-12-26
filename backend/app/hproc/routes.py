@@ -10,6 +10,10 @@ from .service import TerminationDenied
 router = APIRouter(prefix="/hproc", tags=["host_processes"])
 
 
+# Maximum PID value (typically 2^31-1 on most systems)
+MAX_PID_VALUE = 2**31 - 1
+
+
 def validate_pid(pid: int) -> int:
     """Validate PID parameter."""
     if pid < 0:
@@ -17,7 +21,7 @@ def validate_pid(pid: int) -> int:
             status_code=status.HTTP_400_BAD_REQUEST,
             detail="PID must be a non-negative integer"
         )
-    if pid > 2**31 - 1:  # Max PID on most systems
+    if pid > MAX_PID_VALUE:
         raise HTTPException(
             status_code=status.HTTP_400_BAD_REQUEST,
             detail="Invalid PID value"

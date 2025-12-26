@@ -19,7 +19,7 @@ FILENAME_MAX_LENGTH = 255
 FILENAME_FORBIDDEN_CHARS = {'/', '\\', '\0', ':', '*', '?', '"', '<', '>', '|'}
 # Reserved names that cannot be used (case-insensitive)
 RESERVED_NAMES = {'..', '.', 'con', 'prn', 'aux', 'nul'} | {
-    f'{name}{i}' for name in ['com', 'lpt'] for i in range(1, 10)
+    f'{name}{i}' for name in ['com', 'lpt'] for i in range(0, 10)
 }
 
 # App name constraints for virtual processes
@@ -148,7 +148,7 @@ def validate_object_id(oid: str) -> tuple[bool, str]:
         return False, "Invalid ID format"
 
 
-def sanitize_path(path: str) -> str:
+def sanitize_path(path: str | None) -> str:
     """
     Sanitize a file path to prevent path traversal.
     
