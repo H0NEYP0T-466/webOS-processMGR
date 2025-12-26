@@ -1,5 +1,5 @@
 """Host process routes."""
-from fastapi import APIRouter, HTTPException, status, Depends
+from fastapi import APIRouter, HTTPException, status, Depends, Path
 
 from ..auth.service import get_current_user, get_admin_user
 from ..auth.schemas import TokenData
@@ -8,6 +8,21 @@ from . import service
 from .service import TerminationDenied
 
 router = APIRouter(prefix="/hproc", tags=["host_processes"])
+
+
+def validate_pid(pid: int) -> int:
+    """Validate PID parameter."""
+    if pid < 0:
+        raise HTTPException(
+            status_code=status.HTTP_400_BAD_REQUEST,
+            detail="PID must be a non-negative integer"
+        )
+    if pid > 2**31 - 1:  # Max PID on most systems
+        raise HTTPException(
+            status_code=status.HTTP_400_BAD_REQUEST,
+            detail="Invalid PID value"
+        )
+    return pid
 
 
 def dict_to_process(data: dict) -> HostProcess:
@@ -49,6 +64,7 @@ async def get_process_details(
     current_user: TokenData = Depends(get_current_user)
 ):
     """Get detailed information about a specific process."""
+    validate_pid(pid)
     details = service.get_process_details(pid)
     
     if details is None:
@@ -70,6 +86,7 @@ async def terminate_process(
     
     Requires admin role.
     """
+    validate_pid(pid)
     try:
         success = service.terminate_process(pid, admin_user.username)
         return TerminateResult(

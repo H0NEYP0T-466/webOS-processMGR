@@ -3,10 +3,22 @@ from fastapi import APIRouter, HTTPException, status, Depends
 
 from ..auth.service import get_current_user
 from ..auth.schemas import TokenData
+from ..validators import validate_object_id
 from .schemas import StartProcess, VirtualProcess, VirtualProcessList
 from . import service
 
 router = APIRouter(prefix="/vproc", tags=["virtual_processes"])
+
+
+def validate_process_id(process_id: str) -> str:
+    """Validate process_id path parameter."""
+    is_valid, error = validate_object_id(process_id)
+    if not is_valid:
+        raise HTTPException(
+            status_code=status.HTTP_400_BAD_REQUEST,
+            detail=error
+        )
+    return process_id
 
 
 def doc_to_process(doc: dict) -> VirtualProcess:
@@ -57,6 +69,7 @@ async def stop_process(
     current_user: TokenData = Depends(get_current_user)
 ):
     """Stop a virtual process."""
+    validate_process_id(process_id)
     success = await service.stop_process(process_id, current_user.user_id)
     
     if not success:
@@ -74,6 +87,7 @@ async def delete_process(
     current_user: TokenData = Depends(get_current_user)
 ):
     """Delete a virtual process."""
+    validate_process_id(process_id)
     success = await service.delete_process(process_id, current_user.user_id)
     
     if not success:

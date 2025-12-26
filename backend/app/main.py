@@ -1,13 +1,15 @@
 """WebOS Backend - FastAPI Application."""
+import time
 from contextlib import asynccontextmanager
 from datetime import datetime, timezone
 from fastapi import FastAPI, WebSocket, WebSocketDisconnect, Depends, HTTPException, status, Request
 from fastapi.middleware.cors import CORSMiddleware
 from fastapi.responses import JSONResponse
+from starlette.middleware.base import BaseHTTPMiddleware
 
 from .config import settings
 from .deps import connect_to_database, close_database_connection, get_database
-from .logging_config import info_emoji, error_emoji
+from .logging_config import info_emoji, error_emoji, logger
 from .auth.routes import router as auth_router
 from .auth.service import hash_password, decode_token
 from .files.routes import router as files_router
@@ -17,10 +19,34 @@ from .hproc.routes import router as hproc_router
 from .ws.manager import manager
 from .ws.topics import ALL_TOPICS
 
+# Application start time for uptime tracking
+_app_start_time: datetime | None = None
+
+
+class RequestTimingMiddleware(BaseHTTPMiddleware):
+    """Middleware to add request timing instrumentation."""
+    
+    async def dispatch(self, request: Request, call_next):
+        start_time = time.perf_counter()
+        response = await call_next(request)
+        process_time = (time.perf_counter() - start_time) * 1000  # Convert to ms
+        
+        # Add timing header
+        response.headers["X-Process-Time-Ms"] = f"{process_time:.2f}"
+        
+        # Log slow requests (>500ms)
+        if process_time > 500:
+            logger.warning(f"⚠️ Slow request: {request.method} {request.url.path} took {process_time:.2f}ms")
+        
+        return response
+
 
 @asynccontextmanager
 async def lifespan(app: FastAPI):
     """Application lifespan - startup and shutdown events."""
+    global _app_start_time
+    _app_start_time = datetime.now(timezone.utc)
+    
     # Startup
     db_connected = False
     try:
@@ -85,6 +111,9 @@ app.add_middleware(
     allow_headers=["*"],
 )
 
+# Add request timing middleware
+app.add_middleware(RequestTimingMiddleware)
+
 # Exception handler for database connection errors
 @app.exception_handler(RuntimeError)
 async def runtime_error_handler(request: Request, exc: RuntimeError):
@@ -112,18 +141,82 @@ app.include_router(hproc_router)
 
 @app.get("/health")
 async def health_check():
-    """Health check endpoint."""
+    """
+    Health check endpoint with detailed status.
+    
+    Returns:
+        - status: 'ok' if all services are healthy, 'degraded' if some services are down
+        - database: 'connected' or 'disconnected'
+        - websocket: active connections count
+        - uptime_seconds: server uptime in seconds
+        - timestamp: current server time in ISO format
+    """
+    # Check database
     db_status = "connected"
+    db_latency_ms = None
     try:
-        get_database()
+        db = get_database()
+        # Quick ping to measure latency
+        start = time.perf_counter()
+        await db.command("ping")
+        db_latency_ms = round((time.perf_counter() - start) * 1000, 2)
     except RuntimeError:
         db_status = "disconnected"
+    except Exception:
+        db_status = "error"
+    
+    # Calculate uptime
+    uptime_seconds = None
+    if _app_start_time:
+        uptime_seconds = (datetime.now(timezone.utc) - _app_start_time).total_seconds()
+    
+    # Get WebSocket connection count
+    ws_connections = sum(len(conns) for conns in manager.active_connections.values())
+    
+    overall_status = "ok" if db_status == "connected" else "degraded"
     
     return {
-        "status": "ok" if db_status == "connected" else "degraded",
-        "database": db_status,
+        "status": overall_status,
+        "database": {
+            "status": db_status,
+            "latency_ms": db_latency_ms
+        },
+        "websocket": {
+            "active_connections": ws_connections
+        },
+        "uptime_seconds": round(uptime_seconds, 2) if uptime_seconds else None,
+        "version": "1.0.0",
         "timestamp": datetime.now(timezone.utc).isoformat()
     }
+
+
+@app.get("/health/ready")
+async def readiness_check():
+    """
+    Readiness probe for Kubernetes/container orchestration.
+    
+    Returns 200 if the service is ready to accept traffic.
+    Returns 503 if the service is not ready.
+    """
+    try:
+        db = get_database()
+        await db.command("ping")
+        return {"ready": True}
+    except Exception:
+        return JSONResponse(
+            status_code=status.HTTP_503_SERVICE_UNAVAILABLE,
+            content={"ready": False, "reason": "Database not available"}
+        )
+
+
+@app.get("/health/live")
+async def liveness_check():
+    """
+    Liveness probe for Kubernetes/container orchestration.
+    
+    Returns 200 if the service is alive (even if degraded).
+    """
+    return {"alive": True}
 
 
 @app.websocket("/ws")
