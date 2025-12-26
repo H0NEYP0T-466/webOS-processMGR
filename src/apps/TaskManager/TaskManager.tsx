@@ -138,13 +138,13 @@ export function TaskManager() {
       // Close the associated window if it exists
       if (processToStop) {
         // Try to find by window_id in metadata first
-        const windowId = processToStop.metadata?.window_id as string | undefined;
-        if (windowId) {
+        const windowId = processToStop.metadata?.window_id;
+        if (typeof windowId === 'string') {
           closeWindow(windowId);
         } else {
           // Fallback: find window by app name (if there's only one instance)
           const appWindows = windows.filter(w => w.app === processToStop.app);
-          if (appWindows.length === 1) {
+          if (appWindows.length === 1 && appWindows[0]) {
             closeWindow(appWindows[0].window_id);
           }
         }
