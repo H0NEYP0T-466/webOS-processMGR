@@ -21,16 +21,22 @@ type ViewMode = 'table' | 'grid';
 const GRID_VIEW_LIMIT = 20;
 
 // Convert WindowState to VirtualProcess-like format for display
+// The window_id contains a timestamp (e.g., "file-manager-1234567890") which we can extract
 function windowToVirtualProcess(window: WindowState): VirtualProcess {
+  // Extract timestamp from window_id (format: "appname-timestamp")
+  const parts = window.window_id.split('-');
+  const timestamp = parts.length > 1 ? parseInt(parts[parts.length - 1], 10) : Date.now();
+  const startedAt = new Date(timestamp).toISOString();
+  
   return {
     id: window.window_id,
     owner_id: '',
     app: window.app,
     status: 'running',
-    cpu: 0,
-    mem: 0,
-    started_at: new Date().toISOString(),
-    updated_at: new Date().toISOString(),
+    cpu: 0, // Virtual processes don't have actual CPU metrics
+    mem: 0, // Virtual processes don't have actual memory metrics
+    started_at: startedAt,
+    updated_at: startedAt,
     metadata: { window_id: window.window_id }
   };
 }
@@ -43,7 +49,7 @@ export function TaskManager() {
   const [sortField, setSortField] = useState<string>('cpu_percent');
   const [sortDir, setSortDir] = useState<'asc' | 'desc'>('desc');
   const [searchTerm, setSearchTerm] = useState('');
-  const [initialLoading, setInitialLoading] = useState(false);
+  const [hostLoading, setHostLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const [selectedProcess, setSelectedProcess] = useState<number | string | null>(null);
   const [confirmTerminate, setConfirmTerminate] = useState<string | null>(null);
@@ -116,14 +122,14 @@ export function TaskManager() {
   useEffect(() => {
     const loadData = async () => {
       if (isMounted.current) {
-        setInitialLoading(true);
+        setHostLoading(true);
       }
       
       await fetchHostProcesses();
       
       if (isMounted.current) {
         hasLoadedOnce.current = true;
-        setInitialLoading(false);
+        setHostLoading(false);
       }
     };
     
@@ -179,9 +185,9 @@ export function TaskManager() {
         closeWindow(processToStop.id);
       }
       
-      // Also try to delete from backend (fire and forget)
-      api.deleteVirtualProcess(confirmTerminate).catch(() => {
-        // Ignore errors - window is already closed
+      // Also try to delete from backend (fire and forget, log errors for debugging)
+      api.deleteVirtualProcess(confirmTerminate).catch((err) => {
+        console.warn('Failed to delete virtual process from backend:', err);
       });
       
       setError(null);
@@ -290,11 +296,11 @@ export function TaskManager() {
           <button 
             className={`tm-refresh-btn ${isRefreshing ? 'refreshing' : ''}`}
             onClick={handleRefresh}
-            disabled={initialLoading || isRefreshing}
+            disabled={hostLoading || isRefreshing}
             title="Refresh processes"
             aria-label="Refresh process list"
           >
-            {initialLoading || isRefreshing ? '⟳' : '🔄'}
+            {hostLoading || isRefreshing ? '⟳' : '🔄'}
           </button>
         </div>
       </div>
@@ -481,7 +487,7 @@ export function TaskManager() {
                 onSort={handleSort}
                 sortField={sortField}
                 sortDir={sortDir}
-                loading={initialLoading}
+                loading={hostLoading}
                 viewMode={viewMode}
                 selectedProcess={selectedProcess}
                 onSelect={(pid) => {
