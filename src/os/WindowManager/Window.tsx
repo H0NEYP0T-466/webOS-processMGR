@@ -35,33 +35,36 @@ export function Window({ window: win, children, title, icon = '📁' }: WindowPr
 
   const isActive = activeWindowId === win.window_id;
 
-  const handleClose = useCallback(async () => {
-    // Find and delete the virtual process associated with this window.
-    // We fetch directly from API to ensure we have the latest process list,
-    // since the Zustand store may not have up-to-date process information.
-    try {
-      const data = await api.listVirtualProcesses();
-      // First try to find by exact window_id match (stored in metadata when process was started)
-      let process = data.processes.find(
-        p => p.metadata?.window_id === win.window_id
-      );
-      // Fallback: if no exact match and there's exactly one process for this app,
-      // it must be the one associated with this window (safe to delete).
-      // This handles legacy processes that may not have window_id in metadata.
-      if (!process) {
-        const appProcesses = data.processes.filter(p => p.app === win.app);
-        if (appProcesses.length === 1) {
-          process = appProcesses[0];
-        }
-      }
-      if (process) {
-        // Delete the process entirely so it doesn't show up in task manager
-        await api.deleteVirtualProcess(process.id);
-      }
-    } catch (error) {
-      console.error('Failed to delete virtual process:', error);
-    }
+  const handleClose = useCallback(() => {
+    // Close window immediately in local state (instant feedback)
     closeWindow(win.window_id);
+    
+    // Fire-and-forget: Clean up virtual process in backend (don't wait)
+    // This is for sync purposes only - the window is already closed
+    (async () => {
+      try {
+        const data = await api.listVirtualProcesses();
+        // First try to find by exact window_id match (stored in metadata when process was started)
+        let process = data.processes.find(
+          p => p.metadata?.window_id === win.window_id
+        );
+        // Fallback: if no exact match and there's exactly one process for this app,
+        // it must be the one associated with this window (safe to delete).
+        // This handles legacy processes that may not have window_id in metadata.
+        if (!process) {
+          const appProcesses = data.processes.filter(p => p.app === win.app);
+          if (appProcesses.length === 1) {
+            process = appProcesses[0];
+          }
+        }
+        if (process) {
+          await api.deleteVirtualProcess(process.id);
+        }
+      } catch (error) {
+        console.warn('Background sync: Failed to delete virtual process:', error);
+        // Don't show error to user - the window is already closed
+      }
+    })();
   }, [closeWindow, win.window_id, win.app]);
 
   const handleMouseDown = useCallback((e: React.MouseEvent) => {

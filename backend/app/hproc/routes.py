@@ -1,4 +1,6 @@
 """Host process routes."""
+import asyncio
+from concurrent.futures import ThreadPoolExecutor
 from fastapi import APIRouter, HTTPException, status, Depends, Path
 
 from ..auth.service import get_current_user, get_admin_user
@@ -8,6 +10,9 @@ from . import service
 from .service import TerminationDenied
 
 router = APIRouter(prefix="/hproc", tags=["host_processes"])
+
+# Thread pool for CPU-bound psutil operations
+_executor = ThreadPoolExecutor(max_workers=2)
 
 
 # Maximum PID value (typically 2^31-1 on most systems)
@@ -46,15 +51,17 @@ def dict_to_process(data: dict) -> HostProcess:
 
 @router.get("/list", response_model=HostProcessList)
 async def list_processes(current_user: TokenData = Depends(get_current_user)):
-    """List all host system processes."""
-    procs = service.list_processes()
+    """List all host system processes (runs in thread pool to avoid blocking)."""
+    loop = asyncio.get_event_loop()
+    procs = await loop.run_in_executor(_executor, service.list_processes)
     return HostProcessList(processes=[dict_to_process(p) for p in procs])
 
 
 @router.get("/metrics", response_model=SystemMetrics)
 async def get_metrics(current_user: TokenData = Depends(get_current_user)):
-    """Get system-wide metrics and top processes."""
-    metrics = service.get_system_metrics()
+    """Get system-wide metrics and top processes (runs in thread pool to avoid blocking)."""
+    loop = asyncio.get_event_loop()
+    metrics = await loop.run_in_executor(_executor, service.get_system_metrics)
     return SystemMetrics(
         cpu_percent=metrics["cpu_percent"],
         memory_percent=metrics["memory_percent"],
@@ -67,9 +74,10 @@ async def get_process_details(
     pid: int,
     current_user: TokenData = Depends(get_current_user)
 ):
-    """Get detailed information about a specific process."""
+    """Get detailed information about a specific process (runs in thread pool)."""
     validate_pid(pid)
-    details = service.get_process_details(pid)
+    loop = asyncio.get_event_loop()
+    details = await loop.run_in_executor(_executor, service.get_process_details, pid)
     
     if details is None:
         raise HTTPException(
@@ -92,7 +100,13 @@ async def terminate_process(
     """
     validate_pid(pid)
     try:
-        success = service.terminate_process(pid, admin_user.username)
+        loop = asyncio.get_event_loop()
+        success = await loop.run_in_executor(
+            _executor, 
+            service.terminate_process, 
+            pid, 
+            admin_user.username
+        )
         return TerminateResult(
             pid=pid,
             success=success,

@@ -1,8 +1,10 @@
-"""Host process service using psutil."""
+"""Host process service using psutil with caching for performance."""
 import os
+import time
 import psutil
 from datetime import datetime, timezone
 from typing import List, Optional
+from functools import lru_cache
 
 from ..logging_config import info_emoji, warning_emoji
 
@@ -22,24 +24,67 @@ CRITICAL_PROCESS_NAMES = {
     'smss', 'svchost'
 }
 
+# Cache for process data - TTL in seconds
+_process_cache = {
+    "data": None,
+    "timestamp": 0,
+    "ttl": 2.0  # Cache for 2 seconds
+}
+
+_metrics_cache = {
+    "data": None,
+    "timestamp": 0,
+    "ttl": 1.0  # Cache for 1 second
+}
+
+
+def _get_cached_processes() -> Optional[List[dict]]:
+    """Get cached process list if still valid."""
+    if _process_cache["data"] is not None:
+        if time.time() - _process_cache["timestamp"] < _process_cache["ttl"]:
+            return _process_cache["data"]
+    return None
+
+
+def _cache_processes(data: List[dict]) -> None:
+    """Cache the process list."""
+    _process_cache["data"] = data
+    _process_cache["timestamp"] = time.time()
+
 
 def list_processes() -> List[dict]:
-    """List all running processes on the host system."""
+    """
+    List all running processes on the host system.
+    
+    Uses caching to avoid repeated expensive psutil calls.
+    CPU percentages use interval=0 (instant) which gives values since last call,
+    which is fine for display purposes and much faster than blocking intervals.
+    """
+    # Check cache first
+    cached = _get_cached_processes()
+    if cached is not None:
+        return cached
+    
     procs = []
     cpu_count = psutil.cpu_count() or 1
     
-    for p in psutil.process_iter(attrs=["pid", "name", "username", "status"]):
+    # Get all processes at once with minimal attributes for speed
+    for p in psutil.process_iter(attrs=["pid", "name", "username", "status", "create_time", "num_threads"]):
         try:
-            info = p.as_dict(attrs=[
-                "pid", "name", "username", "status", 
-                "create_time", "cmdline", "num_threads"
-            ])
+            info = p.info.copy()
             
-            # Get CPU and memory percent (with small interval for CPU)
-            # Normalize CPU percent to 0-100 range (divide by CPU count for per-core normalization)
-            raw_cpu = p.cpu_percent(interval=0.0)
-            info["cpu_percent"] = min(100.0, raw_cpu / cpu_count) if raw_cpu > 0 else 0.0
-            info["memory_percent"] = p.memory_percent()
+            # Get CPU and memory percent with no interval (instant)
+            # This uses values accumulated since last call, much faster
+            try:
+                raw_cpu = p.cpu_percent(interval=None)
+                info["cpu_percent"] = min(100.0, raw_cpu / cpu_count) if raw_cpu > 0 else 0.0
+            except (psutil.NoSuchProcess, psutil.AccessDenied):
+                info["cpu_percent"] = 0.0
+            
+            try:
+                info["memory_percent"] = p.memory_percent()
+            except (psutil.NoSuchProcess, psutil.AccessDenied):
+                info["memory_percent"] = 0.0
             
             # Convert create_time to datetime
             if info.get("create_time"):
@@ -48,17 +93,16 @@ def list_processes() -> List[dict]:
                     tz=timezone.utc
                 )
             
-            # Convert cmdline list to string
-            cmdline = info.get("cmdline")
-            if cmdline is not None:
-                info["cmdline"] = " ".join(cmdline) if cmdline else None
-            else:
-                info["cmdline"] = None
+            # Skip cmdline for list view - too expensive, get it only in details
+            info["cmdline"] = None
             
             procs.append(info)
             
         except (psutil.NoSuchProcess, psutil.AccessDenied, psutil.ZombieProcess):
             continue
+    
+    # Cache the result
+    _cache_processes(procs)
     
     return procs
 
@@ -168,16 +212,33 @@ def terminate_process(pid: int, by_user: str) -> bool:
 
 
 def get_system_metrics() -> dict:
-    """Get system-wide CPU and memory metrics."""
-    cpu = psutil.cpu_percent(interval=0.1)
+    """
+    Get system-wide CPU and memory metrics with caching.
+    
+    CPU percent uses interval=None for instant values (no blocking).
+    Results are cached for 1 second to reduce expensive calls.
+    """
+    # Check metrics cache
+    if _metrics_cache["data"] is not None:
+        if time.time() - _metrics_cache["timestamp"] < _metrics_cache["ttl"]:
+            return _metrics_cache["data"]
+    
+    # Get CPU percent with no interval (instant, non-blocking)
+    cpu = psutil.cpu_percent(interval=None)
     mem = psutil.virtual_memory().percent
     
-    # Get top processes by CPU
+    # Get top processes by CPU from cached list
     procs = list_processes()
     top_by_cpu = sorted(procs, key=lambda x: x.get("cpu_percent", 0), reverse=True)[:5]
     
-    return {
+    result = {
         "cpu_percent": cpu,
         "memory_percent": mem,
         "top_processes": top_by_cpu
     }
+    
+    # Cache the result
+    _metrics_cache["data"] = result
+    _metrics_cache["timestamp"] = time.time()
+    
+    return result
