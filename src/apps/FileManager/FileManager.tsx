@@ -41,6 +41,12 @@ export function FileManager() {
   const currentFolder = fileTree.find(n => n.path === currentPath && n.type === 'folder');
   const currentContents = fileTree.filter(n => {
     if (currentPath === '/') {
+      // At root: show items whose parent is the root folder (if exists) or null (legacy)
+      // Exclude the root folder itself from display
+      if (currentFolder) {
+        return n.parent_id === currentFolder.id;
+      }
+      // Fallback for legacy users without root folder node
       return n.parent_id === null && n.path !== '/';
     }
     return n.parent_id === currentFolder?.id;
