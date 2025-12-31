@@ -1,12 +1,15 @@
 """WebSocket connection manager."""
 import asyncio
-import json
+from concurrent.futures import ThreadPoolExecutor
 from typing import Dict, List, Set
 from fastapi import WebSocket
 
 from ..hproc import service as hproc_service
 from ..logging_config import info_emoji
 from .topics import METRICS_HOST
+
+# Thread pool for CPU-bound psutil operations
+_executor = ThreadPoolExecutor(max_workers=1)
 
 
 class ConnectionManager:
@@ -104,10 +107,12 @@ class ConnectionManager:
                 pass
     
     async def _metrics_loop(self):
-        """Background loop to broadcast system metrics."""
+        """Background loop to broadcast system metrics (non-blocking)."""
+        loop = asyncio.get_event_loop()
+        
         while True:
             try:
-                await asyncio.sleep(1)  # Broadcast every 1 second for faster updates
+                await asyncio.sleep(2)  # Broadcast every 2 seconds (reduced from 1s)
                 
                 # Get metrics only if there are subscribed connections
                 has_subscribers = any(
@@ -116,7 +121,11 @@ class ConnectionManager:
                 )
                 
                 if has_subscribers:
-                    metrics = hproc_service.get_system_metrics()
+                    # Run psutil call in executor to avoid blocking
+                    metrics = await loop.run_in_executor(
+                        _executor, 
+                        hproc_service.get_system_metrics
+                    )
                     
                     # Convert to serializable format
                     message = {

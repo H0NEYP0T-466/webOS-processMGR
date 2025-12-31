@@ -37,17 +37,16 @@ export function Desktop() {
   // Load desktop state on mount (only wallpaper and settings, not previous windows)
   useEffect(() => {
     let mounted = true;
+    
+    // Clear stale virtual processes in background (fire-and-forget)
+    // This ensures Task Manager only shows currently running processes
+    api.clearAllVirtualProcesses().catch((clearError) => {
+      console.warn('Background: Failed to clear stale virtual processes:', clearError);
+    });
+    
+    // Load desktop state (wallpaper and settings)
     const loadState = async () => {
       try {
-        // Clear all stale virtual processes from previous sessions
-        // This ensures Task Manager only shows currently running processes
-        try {
-          await api.clearAllVirtualProcesses();
-        } catch (clearError) {
-          // Log but don't block desktop loading - stale processes are not critical
-          console.warn('Failed to clear stale virtual processes:', clearError);
-        }
-        
         const state = await api.getDesktopState();
         if (mounted) {
           loadDesktopState({
@@ -58,8 +57,10 @@ export function Desktop() {
         }
       } catch (error) {
         console.error('Failed to load desktop state:', error);
+        // Continue with defaults - don't block the desktop
       }
     };
+    
     loadState();
     return () => { mounted = false; };
   }, [loadDesktopState]);
@@ -100,7 +101,7 @@ export function Desktop() {
     }
   }, [getDesktopState]);
 
-  const handleOpenApp = useCallback(async (appId: string) => {
+  const handleOpenApp = useCallback((appId: string) => {
     const existingWindow = windows.find(w => w.app === appId);
     
     if (existingWindow) {
@@ -110,13 +111,7 @@ export function Desktop() {
 
     const windowId = `${appId}-${Date.now()}`;
     
-    // Start a virtual process for this app
-    try {
-      await api.startVirtualProcess(appId, { window_id: windowId });
-    } catch (error) {
-      console.error('Failed to start virtual process:', error);
-    }
-
+    // Open window immediately in local state (no waiting for API)
     openWindow({
       window_id: windowId,
       app: appId,
@@ -129,6 +124,13 @@ export function Desktop() {
     });
     
     setShowAppLauncher(false);
+    
+    // Fire-and-forget: Start virtual process in backend (don't wait)
+    // This is for sync purposes only - the window is already open
+    api.startVirtualProcess(appId, { window_id: windowId }).catch((error) => {
+      console.warn('Background sync: Failed to start virtual process:', error);
+      // Don't show error to user - the window is already open and working
+    });
   }, [windows, openWindow]);
 
   const handleLogout = useCallback(async () => {

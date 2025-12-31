@@ -14,6 +14,15 @@ class MockProcess:
         self._pid = pid
         self._name = name
         self._username = username
+        # The 'info' attribute is populated by psutil.process_iter(attrs=...)
+        self.info = {
+            "pid": self._pid,
+            "name": self._name,
+            "username": self._username,
+            "status": "running",
+            "create_time": datetime.now(timezone.utc).timestamp(),
+            "num_threads": 4
+        }
     
     def as_dict(self, attrs=None):
         return {
@@ -57,9 +66,23 @@ def create_mock_process_iter(processes):
         yield p
 
 
+def setup_mock_psutil_exceptions(mock_psutil):
+    """Setup mock psutil exceptions to behave like real exceptions."""
+    import psutil as real_psutil
+    mock_psutil.NoSuchProcess = real_psutil.NoSuchProcess
+    mock_psutil.AccessDenied = real_psutil.AccessDenied
+    mock_psutil.ZombieProcess = real_psutil.ZombieProcess
+
+
 @patch('app.hproc.service.psutil')
 def test_list_processes(mock_psutil):
     """Test listing processes."""
+    setup_mock_psutil_exceptions(mock_psutil)
+    
+    # Clear the cache to ensure fresh data
+    service._process_cache["data"] = None
+    service._process_cache["timestamp"] = 0
+    
     mock_proc = MockProcess()
     mock_psutil.process_iter.return_value = [mock_proc]
     mock_psutil.cpu_count.return_value = 4
@@ -75,6 +98,7 @@ def test_list_processes(mock_psutil):
 @patch('app.hproc.service.psutil')
 def test_get_process_details(mock_psutil):
     """Test getting process details."""
+    setup_mock_psutil_exceptions(mock_psutil)
     mock_proc = MockProcess()
     mock_psutil.Process.return_value = mock_proc
     mock_psutil.cpu_count.return_value = 4
@@ -129,6 +153,14 @@ def test_terminate_process_success(mock_os, mock_psutil):
 @patch('app.hproc.service.psutil')
 def test_get_system_metrics(mock_psutil):
     """Test getting system metrics."""
+    setup_mock_psutil_exceptions(mock_psutil)
+    
+    # Clear both caches to ensure fresh data
+    service._process_cache["data"] = None
+    service._process_cache["timestamp"] = 0
+    service._metrics_cache["data"] = None
+    service._metrics_cache["timestamp"] = 0
+    
     mock_psutil.cpu_percent.return_value = 25.0
     mock_psutil.virtual_memory.return_value = MagicMock(percent=50.0)
     mock_psutil.cpu_count.return_value = 4
