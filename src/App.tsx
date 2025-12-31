@@ -95,7 +95,7 @@ function App() {
     return <Boot onComplete={handleBootComplete} skipBoot={false} />;
   }
 
-  if (phase === 'login' && !isAuthenticated) {
+  if (!isAuthenticated) {
     return <Login onSuccess={handleLoginSuccess} />;
   }
 
