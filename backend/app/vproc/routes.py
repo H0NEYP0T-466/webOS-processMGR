@@ -10,15 +10,10 @@ from . import service
 router = APIRouter(prefix="/vproc", tags=["virtual_processes"])
 
 
-def validate_process_id(process_id: str) -> str:
-    """Validate process_id path parameter."""
-    is_valid, error = validate_object_id(process_id)
-    if not is_valid:
-        raise HTTPException(
-            status_code=status.HTTP_400_BAD_REQUEST,
-            detail=error
-        )
-    return process_id
+def is_valid_object_id(process_id: str) -> bool:
+    """Check if process_id is a valid MongoDB ObjectId."""
+    is_valid, _ = validate_object_id(process_id)
+    return is_valid
 
 
 def doc_to_process(doc: dict) -> VirtualProcess:
@@ -68,9 +63,15 @@ async def stop_process(
     process_id: str,
     current_user: TokenData = Depends(get_current_user)
 ):
-    """Stop a virtual process."""
-    validate_process_id(process_id)
-    success = await service.stop_process(process_id, current_user.user_id)
+    """Stop a virtual process.
+    
+    Accepts either a MongoDB ObjectId or a window_id (stored in metadata).
+    """
+    if is_valid_object_id(process_id):
+        success = await service.stop_process(process_id, current_user.user_id)
+    else:
+        # Try to find by window_id in metadata
+        success = await service.stop_process_by_window_id(process_id, current_user.user_id)
     
     if not success:
         raise HTTPException(
@@ -86,9 +87,15 @@ async def delete_process(
     process_id: str,
     current_user: TokenData = Depends(get_current_user)
 ):
-    """Delete a virtual process."""
-    validate_process_id(process_id)
-    success = await service.delete_process(process_id, current_user.user_id)
+    """Delete a virtual process.
+    
+    Accepts either a MongoDB ObjectId or a window_id (stored in metadata).
+    """
+    if is_valid_object_id(process_id):
+        success = await service.delete_process(process_id, current_user.user_id)
+    else:
+        # Try to find by window_id in metadata
+        success = await service.delete_process_by_window_id(process_id, current_user.user_id)
     
     if not success:
         raise HTTPException(

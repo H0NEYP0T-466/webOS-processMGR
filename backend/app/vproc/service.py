@@ -88,11 +88,55 @@ async def stop_process(process_id: str, owner_id: str) -> bool:
 
 
 async def delete_process(process_id: str, owner_id: str) -> bool:
-    """Delete a virtual process."""
+    """Delete a virtual process by MongoDB ObjectId."""
     db = get_database()
     
     result = await db.virtual_processes.delete_one({
         "_id": ObjectId(process_id),
+        "owner_id": owner_id
+    })
+    
+    return result.deleted_count > 0
+
+
+async def get_process_by_window_id(window_id: str, owner_id: str) -> Optional[dict]:
+    """Get a virtual process by window_id stored in metadata."""
+    db = get_database()
+    
+    process = await db.virtual_processes.find_one({
+        "metadata.window_id": window_id,
+        "owner_id": owner_id
+    })
+    
+    return process
+
+
+async def stop_process_by_window_id(window_id: str, owner_id: str) -> bool:
+    """Stop a virtual process by window_id stored in metadata."""
+    db = get_database()
+    
+    # Use find_one_and_update to atomically find and update in one operation
+    process = await db.virtual_processes.find_one_and_update(
+        {"metadata.window_id": window_id, "owner_id": owner_id},
+        {"$set": {
+            "status": "stopped",
+            "updated_at": datetime.now(timezone.utc)
+        }}
+    )
+    
+    if process is not None:
+        info_emoji("🧰", f"Virtual process stopped: window_id={window_id} app={process['app']} user={owner_id}")
+        return True
+    
+    return False
+
+
+async def delete_process_by_window_id(window_id: str, owner_id: str) -> bool:
+    """Delete a virtual process by window_id stored in metadata."""
+    db = get_database()
+    
+    result = await db.virtual_processes.delete_one({
+        "metadata.window_id": window_id,
         "owner_id": owner_id
     })
     
