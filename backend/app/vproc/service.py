@@ -115,11 +115,8 @@ async def stop_process_by_window_id(window_id: str, owner_id: str) -> bool:
     """Stop a virtual process by window_id stored in metadata."""
     db = get_database()
     
-    process = await get_process_by_window_id(window_id, owner_id)
-    if process is None:
-        return False
-    
-    result = await db.virtual_processes.update_one(
+    # Use find_one_and_update to atomically find and update in one operation
+    process = await db.virtual_processes.find_one_and_update(
         {"metadata.window_id": window_id, "owner_id": owner_id},
         {"$set": {
             "status": "stopped",
@@ -127,7 +124,7 @@ async def stop_process_by_window_id(window_id: str, owner_id: str) -> bool:
         }}
     )
     
-    if result.modified_count > 0:
+    if process is not None:
         info_emoji("🧰", f"Virtual process stopped: window_id={window_id} app={process['app']} user={owner_id}")
         return True
     
