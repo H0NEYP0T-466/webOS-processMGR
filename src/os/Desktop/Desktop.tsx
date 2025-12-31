@@ -84,16 +84,29 @@ export function Desktop() {
    */
   const saveStateBeforeAction = useCallback(async (shouldResetSaving = true) => {
     setIsSaving(true);
+    
+    // Create a timeout promise to avoid hanging indefinitely
+    const timeout = (ms: number) => new Promise<void>((_, reject) => 
+      setTimeout(() => reject(new Error('Operation timed out')), ms)
+    );
+    
     try {
       const state = getDesktopState();
-      await api.updateDesktopState({
-        ...state,
-        icons: []
-      });
-      // Clean up virtual processes to ensure fresh state on next session
-      await api.clearAllVirtualProcesses();
+      // Race between the actual save operation and a 5 second timeout
+      await Promise.race([
+        (async () => {
+          await api.updateDesktopState({
+            ...state,
+            icons: []
+          });
+          // Clean up virtual processes to ensure fresh state on next session
+          await api.clearAllVirtualProcesses();
+        })(),
+        timeout(5000)
+      ]);
     } catch (error) {
       console.error('Failed to save state:', error);
+      // Continue with the action even if saving failed - don't block logout/shutdown
     } finally {
       if (shouldResetSaving) {
         setIsSaving(false);
