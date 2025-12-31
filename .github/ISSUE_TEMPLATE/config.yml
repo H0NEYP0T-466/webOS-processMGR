@@ -1,0 +1,11 @@
+blank_issues_enabled: false
+contact_links:
+  - name: "Project Discussions"
+    url: https://github.com/H0NEYP0T-466/webOS-processMGR/discussions
+    about: "Ask questions or start a discussion with the community."
+  - name: "Security reports"
+    url: https://github.com/H0NEYP0T-466/webOS-processMGR/blob/main/SECURITY.md
+    about: "Review the security policy and report vulnerabilities responsibly."
+  - name: "Q&A / Support"
+    url: https://github.com/H0NEYP0T-466/webOS-processMGR/issues
+    about: "Open a question if discussions are not available."

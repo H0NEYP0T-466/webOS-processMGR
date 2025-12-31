@@ -1,0 +1,49 @@
+name: "Feature request"
+description: "Propose an enhancement"
+title: "[Feature]: "
+labels: ["enhancement"]
+body:
+  - type: textarea
+    id: problem
+    attributes:
+      label: "Problem Statement"
+      description: "What problem are you trying to solve?"
+      placeholder: "Describe the underlying user need or pain point."
+    validations:
+      required: true
+  - type: textarea
+    id: solution
+    attributes:
+      label: "Proposed Solution"
+      description: "How would you like to see this solved?"
+      placeholder: "Describe the desired behavior or feature."
+    validations:
+      required: true
+  - type: textarea
+    id: alternatives
+    attributes:
+      label: "Alternatives Considered"
+      description: "What alternatives have you considered?"
+      placeholder: "List other ideas or workarounds you evaluated."
+  - type: textarea
+    id: scope
+    attributes:
+      label: "Scope / Out-of-Scope"
+      description: "Clarify what is included and explicitly out of scope."
+      placeholder: |
+        In scope:
+        - ...
+        Out of scope:
+        - ...
+  - type: textarea
+    id: risks
+    attributes:
+      label: "Risks and Impact"
+      description: "Call out risks, dependencies, or potential side effects."
+      placeholder: "e.g., performance, security, UX considerations."
+  - type: textarea
+    id: context
+    attributes:
+      label: "Additional Context"
+      description: "Add any other context, references, or screenshots."
+      placeholder: "Links to related issues, designs, or documentation."
