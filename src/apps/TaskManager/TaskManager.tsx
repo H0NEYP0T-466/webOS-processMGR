@@ -1,6 +1,9 @@
 /**
  * Task Manager App - Virtual OS and Host System Processes
  * Optimized for fast initial render and responsive updates
+ * 
+ * Virtual OS tab shows windows from local state for immediate display,
+ * ensuring tasks are visible even without backend connectivity.
  */
 import { useState, useEffect, useCallback, useRef, useMemo } from 'react';
 import { motion, AnimatePresence } from 'framer-motion';
@@ -8,7 +11,7 @@ import { ResponsiveContainer, Area, AreaChart, XAxis, Tooltip } from 'recharts';
 import { api } from '../../services/api';
 import { wsClient, WS_TOPICS } from '../../services/ws';
 import { useOSStore } from '../../state/osStore';
-import type { VirtualProcess, HostProcess, SystemMetrics } from '../../types';
+import type { VirtualProcess, HostProcess, SystemMetrics, WindowState } from '../../types';
 import './TaskManager.css';
 
 type TabType = 'virtual' | 'host';
@@ -16,19 +19,37 @@ type ViewMode = 'table' | 'grid';
 
 // Configuration for grid view display limits
 const GRID_VIEW_LIMIT = 20;
-// Delay threshold before showing loading spinner - prevents flash of loading state for fast operations
-const INITIAL_LOAD_DELAY = 100; // ms
+
+// Convert WindowState to VirtualProcess-like format for display
+// The window_id contains a timestamp (e.g., "file-manager-1234567890") which we can extract
+function windowToVirtualProcess(window: WindowState): VirtualProcess {
+  // Extract timestamp from window_id (format: "appname-timestamp")
+  const parts = window.window_id.split('-');
+  const timestamp = parts.length > 1 ? parseInt(parts[parts.length - 1], 10) : Date.now();
+  const startedAt = new Date(timestamp).toISOString();
+  
+  return {
+    id: window.window_id,
+    owner_id: '',
+    app: window.app,
+    status: 'running',
+    cpu: 0, // Virtual processes don't have actual CPU metrics
+    mem: 0, // Virtual processes don't have actual memory metrics
+    started_at: startedAt,
+    updated_at: startedAt,
+    metadata: { window_id: window.window_id }
+  };
+}
 
 export function TaskManager() {
   const [activeTab, setActiveTab] = useState<TabType>('virtual');
-  const [virtualProcesses, setVirtualProcesses] = useState<VirtualProcess[]>([]);
   const [hostProcesses, setHostProcesses] = useState<HostProcess[]>([]);
   const [metrics, setMetrics] = useState<SystemMetrics | null>(null);
   const [metricsHistory, setMetricsHistory] = useState<{ cpu: number; mem: number; time: string }[]>([]);
   const [sortField, setSortField] = useState<string>('cpu_percent');
   const [sortDir, setSortDir] = useState<'asc' | 'desc'>('desc');
   const [searchTerm, setSearchTerm] = useState('');
-  const [initialLoading, setInitialLoading] = useState(true);
+  const [hostLoading, setHostLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const [selectedProcess, setSelectedProcess] = useState<number | string | null>(null);
   const [confirmTerminate, setConfirmTerminate] = useState<string | null>(null);
@@ -41,18 +62,12 @@ export function TaskManager() {
   const hasLoadedOnce = useRef(false);
   
   const { setSystemMetrics, windows, closeWindow } = useOSStore();
-
-  // Fetch virtual processes - optimized to not block UI
-  const fetchVirtualProcesses = useCallback(async () => {
-    try {
-      const data = await api.listVirtualProcesses();
-      if (isMounted.current) {
-        setVirtualProcesses(data.processes);
-      }
-    } catch (err) {
-      console.error('Failed to fetch virtual processes:', err);
-    }
-  }, []);
+  
+  // Derive virtual processes from windows state for immediate display
+  const virtualProcesses = useMemo(() => 
+    windows.map(windowToVirtualProcess), 
+    [windows]
+  );
 
   // Fetch host processes - optimized to not block UI
   const fetchHostProcesses = useCallback(async () => {
@@ -82,20 +97,19 @@ export function TaskManager() {
     }
   }, [setSystemMetrics]);
 
-  // Manual refresh with animation
+  // Manual refresh with animation - only needed for host tab
   const handleRefresh = useCallback(async () => {
     setIsRefreshing(true);
     if (activeTab === 'host') {
       await fetchHostProcesses();
-    } else {
-      await fetchVirtualProcesses();
     }
+    // Virtual processes come from local state, no need to refresh
     setTimeout(() => {
       if (isMounted.current) {
         setIsRefreshing(false);
       }
     }, 300);
-  }, [activeTab, fetchHostProcesses, fetchVirtualProcesses]);
+  }, [activeTab, fetchHostProcesses]);
 
   // Cleanup on unmount
   useEffect(() => {
@@ -104,33 +118,23 @@ export function TaskManager() {
     };
   }, []);
 
-  // Initial fetch - optimized for fast display
+  // Initial fetch for host processes only - virtual processes come from local state immediately
   useEffect(() => {
-    // Start fetching immediately without waiting
     const loadData = async () => {
-      // Show loading only if it takes longer than INITIAL_LOAD_DELAY
-      const loadingTimer = setTimeout(() => {
-        if (!hasLoadedOnce.current && isMounted.current) {
-          setInitialLoading(true);
-        }
-      }, INITIAL_LOAD_DELAY);
+      if (isMounted.current) {
+        setHostLoading(true);
+      }
       
-      // Fetch both in parallel
-      await Promise.all([
-        fetchVirtualProcesses(),
-        fetchHostProcesses()
-      ]);
-      
-      clearTimeout(loadingTimer);
+      await fetchHostProcesses();
       
       if (isMounted.current) {
         hasLoadedOnce.current = true;
-        setInitialLoading(false);
+        setHostLoading(false);
       }
     };
     
     loadData();
-  }, [fetchVirtualProcesses, fetchHostProcesses]);
+  }, [fetchHostProcesses]);
 
   // Subscribe to metrics updates
   useEffect(() => {
@@ -152,21 +156,20 @@ export function TaskManager() {
     }
   }, [setSystemMetrics]);
 
-  // Periodic refresh for host processes - using 5 second interval to reduce API load
+  // Periodic refresh for host processes only - using 5 second interval to reduce API load
+  // Virtual processes come from local state and update automatically
   useEffect(() => {
     const interval = setInterval(() => {
       if (activeTab === 'host') {
         fetchHostProcesses();
-      } else {
-        fetchVirtualProcesses();
       }
     }, 5000); // 5 second refresh interval
 
     return () => clearInterval(interval);
-  }, [activeTab, fetchHostProcesses, fetchVirtualProcesses]);
+  }, [activeTab, fetchHostProcesses]);
 
-  // Stop virtual process
-  const handleStopVirtualProcess = async (processId: string) => {
+  // Stop virtual process (close the window)
+  const handleStopVirtualProcess = (processId: string) => {
     setConfirmTerminate(processId);
   };
 
@@ -174,27 +177,19 @@ export function TaskManager() {
     if (confirmTerminate === null) return;
     
     try {
-      // Find the process to get its app and metadata
+      // Find the process to get its window_id
       const processToStop = virtualProcesses.find(p => p.id === confirmTerminate);
       
-      await api.deleteVirtualProcess(confirmTerminate);
-      
-      // Close the associated window if it exists
+      // Close the window - the process ID is the window_id
       if (processToStop) {
-        // Try to find by window_id in metadata first
-        const windowId = processToStop.metadata?.window_id;
-        if (typeof windowId === 'string') {
-          closeWindow(windowId);
-        } else {
-          // Fallback: find window by app name (if there's only one instance)
-          const appWindows = windows.filter(w => w.app === processToStop.app);
-          if (appWindows.length === 1 && appWindows[0]) {
-            closeWindow(appWindows[0].window_id);
-          }
-        }
+        closeWindow(processToStop.id);
       }
       
-      fetchVirtualProcesses();
+      // Also try to delete from backend (fire and forget, log errors for debugging)
+      api.deleteVirtualProcess(confirmTerminate).catch((err) => {
+        console.warn('Failed to delete virtual process from backend:', err);
+      });
+      
       setError(null);
     } catch (err) {
       setError(err instanceof Error ? err.message : 'Failed to stop process');
@@ -301,11 +296,11 @@ export function TaskManager() {
           <button 
             className={`tm-refresh-btn ${isRefreshing ? 'refreshing' : ''}`}
             onClick={handleRefresh}
-            disabled={initialLoading || isRefreshing}
+            disabled={hostLoading || isRefreshing}
             title="Refresh processes"
             aria-label="Refresh process list"
           >
-            {initialLoading || isRefreshing ? '⟳' : '🔄'}
+            {hostLoading || isRefreshing ? '⟳' : '🔄'}
           </button>
         </div>
       </div>
@@ -343,7 +338,7 @@ export function TaskManager() {
               <VirtualProcessesTab
                 processes={filteredVirtualProcesses}
                 onStop={handleStopVirtualProcess}
-                loading={initialLoading}
+                loading={false}
                 viewMode={viewMode}
                 selectedProcess={selectedProcess}
                 onSelect={(id) => {
@@ -492,7 +487,7 @@ export function TaskManager() {
                 onSort={handleSort}
                 sortField={sortField}
                 sortDir={sortDir}
-                loading={initialLoading}
+                loading={hostLoading}
                 viewMode={viewMode}
                 selectedProcess={selectedProcess}
                 onSelect={(pid) => {
