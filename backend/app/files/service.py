@@ -2,9 +2,15 @@
 from datetime import datetime, timezone
 from typing import Optional, List
 from bson import ObjectId
+from pymongo.errors import DuplicateKeyError
 
 from ..deps import get_database
 from ..logging_config import info_emoji
+
+
+class NodeAlreadyExistsError(Exception):
+    """Exception raised when a file or folder with the same path already exists."""
+    pass
 
 
 async def get_parent_path(parent_id: Optional[str], owner_id: str) -> str:
@@ -51,8 +57,11 @@ async def create_folder(name: str, parent_id: Optional[str], owner_id: str) -> d
         "updated_at": now
     }
     
-    result = await db.fs_nodes.insert_one(folder_doc)
-    folder_doc["_id"] = result.inserted_id
+    try:
+        result = await db.fs_nodes.insert_one(folder_doc)
+        folder_doc["_id"] = result.inserted_id
+    except DuplicateKeyError:
+        raise NodeAlreadyExistsError(f"A folder or file with the name '{name}' already exists at this location")
     
     info_emoji("🗂️", f"Folder created: path={path} owner={owner_id}")
     
@@ -85,8 +94,11 @@ async def create_file(
         "updated_at": now
     }
     
-    result = await db.fs_nodes.insert_one(file_doc)
-    file_doc["_id"] = result.inserted_id
+    try:
+        result = await db.fs_nodes.insert_one(file_doc)
+        file_doc["_id"] = result.inserted_id
+    except DuplicateKeyError:
+        raise NodeAlreadyExistsError(f"A file or folder with the name '{name}' already exists at this location")
     
     info_emoji("📄", f"File created: path={path} owner={owner_id}")
     
@@ -127,27 +139,34 @@ async def update_node(
     
     update_fields = {"updated_at": datetime.now(timezone.utc)}
     
+    # Get the current node to handle name/path changes
+    current_node = await get_node(node_id, owner_id)
+    if current_node is None:
+        return None
+    
     if name is not None:
         update_fields["name"] = name
     
-    if parent_id is not None:
-        update_fields["parent_id"] = parent_id
-        # Rebuild path
-        update_fields["path"] = await build_path(
-            name or (await get_node(node_id, owner_id))["name"],
-            parent_id,
-            owner_id
-        )
+    # Rebuild path if name or parent_id changes
+    if name is not None or parent_id is not None:
+        new_name = name if name is not None else current_node["name"]
+        new_parent_id = parent_id if parent_id is not None else current_node.get("parent_id")
+        update_fields["path"] = await build_path(new_name, new_parent_id, owner_id)
+        if parent_id is not None:
+            update_fields["parent_id"] = parent_id
     
     if content is not None:
         update_fields["content"] = content
         update_fields["size"] = len(content.encode("utf-8"))
     
-    result = await db.fs_nodes.find_one_and_update(
-        {"_id": ObjectId(node_id), "owner_id": owner_id},
-        {"$set": update_fields},
-        return_document=True
-    )
+    try:
+        result = await db.fs_nodes.find_one_and_update(
+            {"_id": ObjectId(node_id), "owner_id": owner_id},
+            {"$set": update_fields},
+            return_document=True
+        )
+    except DuplicateKeyError:
+        raise NodeAlreadyExistsError(f"A file or folder with the name '{name or current_node['name']}' already exists at the destination")
     
     if result and content is not None:
         info_emoji("✍️", f"File updated: path={result['path']} bytes={update_fields['size']} owner={owner_id}")

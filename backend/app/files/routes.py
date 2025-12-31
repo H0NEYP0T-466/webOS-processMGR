@@ -6,6 +6,7 @@ from ..auth.schemas import TokenData
 from ..validators import validate_object_id
 from .schemas import CreateFolder, CreateFile, UpdateNode, FSNode, FSTree
 from . import service
+from .service import NodeAlreadyExistsError
 
 router = APIRouter(prefix="/files", tags=["files"])
 
@@ -44,12 +45,18 @@ async def create_folder(
     current_user: TokenData = Depends(get_current_user)
 ):
     """Create a new folder."""
-    folder = await service.create_folder(
-        name=data.name,
-        parent_id=data.parent_id,
-        owner_id=current_user.user_id
-    )
-    return doc_to_node(folder)
+    try:
+        folder = await service.create_folder(
+            name=data.name,
+            parent_id=data.parent_id,
+            owner_id=current_user.user_id
+        )
+        return doc_to_node(folder)
+    except NodeAlreadyExistsError as e:
+        raise HTTPException(
+            status_code=status.HTTP_409_CONFLICT,
+            detail=str(e)
+        )
 
 
 @router.post("/file", response_model=FSNode)
@@ -58,14 +65,20 @@ async def create_file(
     current_user: TokenData = Depends(get_current_user)
 ):
     """Create a new file."""
-    file = await service.create_file(
-        name=data.name,
-        parent_id=data.parent_id,
-        owner_id=current_user.user_id,
-        content=data.content,
-        mime_type=data.mime_type
-    )
-    return doc_to_node(file)
+    try:
+        file = await service.create_file(
+            name=data.name,
+            parent_id=data.parent_id,
+            owner_id=current_user.user_id,
+            content=data.content,
+            mime_type=data.mime_type
+        )
+        return doc_to_node(file)
+    except NodeAlreadyExistsError as e:
+        raise HTTPException(
+            status_code=status.HTTP_409_CONFLICT,
+            detail=str(e)
+        )
 
 
 @router.get("/tree", response_model=FSTree)
@@ -101,13 +114,19 @@ async def update_node(
 ):
     """Update a file or folder."""
     validate_node_id(node_id)
-    node = await service.update_node(
-        node_id=node_id,
-        owner_id=current_user.user_id,
-        name=data.name,
-        parent_id=data.parent_id,
-        content=data.content
-    )
+    try:
+        node = await service.update_node(
+            node_id=node_id,
+            owner_id=current_user.user_id,
+            name=data.name,
+            parent_id=data.parent_id,
+            content=data.content
+        )
+    except NodeAlreadyExistsError as e:
+        raise HTTPException(
+            status_code=status.HTTP_409_CONFLICT,
+            detail=str(e)
+        )
     
     if node is None:
         raise HTTPException(

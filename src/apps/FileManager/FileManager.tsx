@@ -70,8 +70,8 @@ export function FileManager() {
       addNode(folder as FSNode);
       setShowNewFolderDialog(false);
       setNewItemName('');
-    } catch {
-      setError('Failed to create folder');
+    } catch (err) {
+      setError(err instanceof Error ? err.message : 'Failed to create folder');
     }
   };
 
@@ -84,8 +84,8 @@ export function FileManager() {
       addNode(file as FSNode);
       setShowNewFileDialog(false);
       setNewItemName('');
-    } catch {
-      setError('Failed to create file');
+    } catch (err) {
+      setError(err instanceof Error ? err.message : 'Failed to create file');
     }
   };
 
