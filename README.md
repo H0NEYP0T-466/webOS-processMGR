@@ -1,10 +1,64 @@
-# WebOS - Web-Based Operating System with Process Monitoring
+<h1 align="center">webOS-processMGR</h1>
 
-A full-featured web-based operating system emulation with a rich Task Manager and persistent file system.
+<p align="center">
 
-![WebOS Screenshot](https://via.placeholder.com/800x400?text=WebOS+Screenshot)
+  <!-- Core -->
+  ![GitHub License](https://img.shields.io/github/license/H0NEYP0T-466/webOS-processMGR?style=for-the-badge&color=brightgreen)  
+  ![GitHub Stars](https://img.shields.io/github/stars/H0NEYP0T-466/webOS-processMGR?style=for-the-badge&color=yellow)  
+  ![GitHub Forks](https://img.shields.io/github/forks/H0NEYP0T-466/webOS-processMGR?style=for-the-badge&color=blue)  
+  ![GitHub Issues](https://img.shields.io/github/issues/H0NEYP0T-466/webOS-processMGR?style=for-the-badge&color=red)  
+  ![GitHub Pull Requests](https://img.shields.io/github/issues-pr/H0NEYP0T-466/webOS-processMGR?style=for-the-badge&color=orange)  
+  ![Contributions Welcome](https://img.shields.io/badge/Contributions-Welcome-brightgreen?style=for-the-badge)  
 
-## Features
+  <!-- Activity -->
+  ![Last Commit](https://img.shields.io/github/last-commit/H0NEYP0T-466/webOS-processMGR?style=for-the-badge&color=purple)  
+  ![Commit Activity](https://img.shields.io/github/commit-activity/m/H0NEYP0T-466/webOS-processMGR?style=for-the-badge&color=teal)  
+  ![Repo Size](https://img.shields.io/github/repo-size/H0NEYP0T-466/webOS-processMGR?style=for-the-badge&color=blueviolet)  
+  ![Code Size](https://img.shields.io/github/languages/code-size/H0NEYP0T-466/webOS-processMGR?style=for-the-badge&color=indigo)  
+
+  <!-- Languages -->
+  ![Top Language](https://img.shields.io/github/languages/top/H0NEYP0T-466/webOS-processMGR?style=for-the-badge&color=critical)  
+  ![Languages Count](https://img.shields.io/github/languages/count/H0NEYP0T-466/webOS-processMGR?style=for-the-badge&color=success)  
+
+  <!-- Community -->
+  ![Documentation](https://img.shields.io/badge/Docs-Available-green?style=for-the-badge&logo=readthedocs&logoColor=white)  
+  ![Open Source Love](https://img.shields.io/badge/Open%20Source-%E2%9D%A4-red?style=for-the-badge)  
+
+</p>
+
+<p align="center">A full-featured web-based operating system emulation with a rich Task Manager and persistent file system.</p>
+
+---
+
+## 🔗 Links
+
+- 🌐 [Issues](https://github.com/H0NEYP0T-466/webOS-processMGR/issues)
+- 🤝 [Contributing](https://github.com/H0NEYP0T-466/webOS-processMGR/blob/main/CONTRIBUTING.md)
+- 🛡️ [Security](https://github.com/H0NEYP0T-466/webOS-processMGR/blob/main/SECURITY.md)
+- 📜 [License](https://github.com/H0NEYP0T-466/webOS-processMGR/blob/main/LICENSE)
+
+---
+
+## 📑 Table of Contents
+
+- [Features](#-features)
+- [Tech Stack](#-tech-stack)
+- [Dependencies & Packages](#-dependencies--packages)
+- [Installation](#-installation)
+- [Usage](#-usage)
+- [Folder Structure](#-folder-structure)
+- [API Reference](#-api-reference)
+- [Architecture](#-architecture)
+- [Development](#-development)
+- [Troubleshooting](#-troubleshooting)
+- [Security Considerations](#-security-considerations)
+- [Contributing](#-contributing)
+- [Code of Conduct](#-code-of-conduct)
+- [License](#-license)
+
+---
+
+## ✨ Features
 
 ### 🖥️ Desktop Environment
 - Boot sequence with staged progress and witty messages
@@ -55,40 +109,104 @@ Emoji-rich logs for all major events:
 📦 Desktop state saved: windows=3 icons=2 user=john
 ```
 
-## Tech Stack
+---
 
-### Frontend
-- React 19 + TypeScript
-- Zustand (state management)
-- Framer Motion (animations)
-- Recharts (charts)
-- WebSockets (real-time updates)
+## 🛠 Tech Stack
 
-### Backend
-- FastAPI (Python)
-- Motor (async MongoDB driver)
-- psutil (system monitoring)
-- python-jose (JWT)
-- bcrypt (password hashing)
-- WebSockets
+### Languages
+![TypeScript](https://img.shields.io/badge/TypeScript-%23007ACC.svg?style=for-the-badge&logo=typescript&logoColor=white)
+![Python](https://img.shields.io/badge/Python-3670A0?style=for-the-badge&logo=python&logoColor=ffdd54)
+![JavaScript](https://img.shields.io/badge/JavaScript-%23323330.svg?style=for-the-badge&logo=javascript&logoColor=%23F7DF1E)
 
-### Database
-- MongoDB
+### Frameworks & Libraries
+![React](https://img.shields.io/badge/React-%2320232a.svg?style=for-the-badge&logo=react&logoColor=%2361DAFB)
+![FastAPI](https://img.shields.io/badge/FastAPI-005571?style=for-the-badge&logo=fastapi)
+![Vite](https://img.shields.io/badge/Vite-%23646CFF.svg?style=for-the-badge&logo=vite&logoColor=white)
 
-## Quick Start
+### Databases
+![MongoDB](https://img.shields.io/badge/MongoDB-%234ea94b.svg?style=for-the-badge&logo=mongodb&logoColor=white)
+
+### DevOps / CI / Tools
+![Docker](https://img.shields.io/badge/Docker-%230db7ed.svg?style=for-the-badge&logo=docker&logoColor=white)
+![ESLint](https://img.shields.io/badge/ESLint-4B3263?style=for-the-badge&logo=eslint&logoColor=white)
+![Git](https://img.shields.io/badge/Git-%23F05033.svg?style=for-the-badge&logo=git&logoColor=white)
+![GitHub](https://img.shields.io/badge/GitHub-%23121011.svg?style=for-the-badge&logo=github&logoColor=white)
+
+---
+
+## 📦 Dependencies & Packages
+
+### Frontend Dependencies
+
+<details>
+<summary><b>Runtime Dependencies</b></summary>
+
+[![framer-motion](https://img.shields.io/npm/v/framer-motion?style=for-the-badge&label=framer-motion&color=0055FF)](https://www.npmjs.com/package/framer-motion) - Animation library for React  
+[![react](https://img.shields.io/npm/v/react?style=for-the-badge&label=react&color=61DAFB)](https://www.npmjs.com/package/react) - JavaScript library for building user interfaces  
+[![react-dom](https://img.shields.io/npm/v/react-dom?style=for-the-badge&label=react-dom&color=61DAFB)](https://www.npmjs.com/package/react-dom) - React package for working with the DOM  
+[![react-icons](https://img.shields.io/npm/v/react-icons?style=for-the-badge&label=react-icons&color=E91E63)](https://www.npmjs.com/package/react-icons) - Popular icons for React projects  
+[![react-router-dom](https://img.shields.io/npm/v/react-router-dom?style=for-the-badge&label=react-router-dom&color=CA4245)](https://www.npmjs.com/package/react-router-dom) - Declarative routing for React  
+[![recharts](https://img.shields.io/npm/v/recharts?style=for-the-badge&label=recharts&color=22B5BF)](https://www.npmjs.com/package/recharts) - Composable charting library built on React  
+[![zustand](https://img.shields.io/npm/v/zustand?style=for-the-badge&label=zustand&color=453E3E)](https://www.npmjs.com/package/zustand) - Small, fast state management solution  
+
+</details>
+
+<details>
+<summary><b>Dev Dependencies</b></summary>
+
+[![@eslint/js](https://img.shields.io/npm/v/@eslint/js?style=for-the-badge&label=@eslint/js&color=4B32C3)](https://www.npmjs.com/package/@eslint/js) - ESLint JavaScript configuration  
+[![@types/node](https://img.shields.io/npm/v/@types/node?style=for-the-badge&label=@types/node&color=339933)](https://www.npmjs.com/package/@types/node) - TypeScript definitions for Node.js  
+[![@types/react](https://img.shields.io/npm/v/@types/react?style=for-the-badge&label=@types/react&color=61DAFB)](https://www.npmjs.com/package/@types/react) - TypeScript definitions for React  
+[![@types/react-dom](https://img.shields.io/npm/v/@types/react-dom?style=for-the-badge&label=@types/react-dom&color=61DAFB)](https://www.npmjs.com/package/@types/react-dom) - TypeScript definitions for React DOM  
+[![@vitejs/plugin-react](https://img.shields.io/npm/v/@vitejs/plugin-react?style=for-the-badge&label=@vitejs/plugin-react&color=646CFF)](https://www.npmjs.com/package/@vitejs/plugin-react) - Official Vite plugin for React  
+[![eslint](https://img.shields.io/npm/v/eslint?style=for-the-badge&label=eslint&color=4B32C3)](https://www.npmjs.com/package/eslint) - Pluggable linting utility for JavaScript  
+[![eslint-plugin-react-hooks](https://img.shields.io/npm/v/eslint-plugin-react-hooks?style=for-the-badge&label=eslint-plugin-react-hooks&color=61DAFB)](https://www.npmjs.com/package/eslint-plugin-react-hooks) - ESLint rules for React Hooks  
+[![eslint-plugin-react-refresh](https://img.shields.io/npm/v/eslint-plugin-react-refresh?style=for-the-badge&label=eslint-plugin-react-refresh&color=61DAFB)](https://www.npmjs.com/package/eslint-plugin-react-refresh) - ESLint plugin for React Refresh  
+[![globals](https://img.shields.io/npm/v/globals?style=for-the-badge&label=globals&color=F7DF1E)](https://www.npmjs.com/package/globals) - Global identifiers from different JavaScript environments  
+[![typescript](https://img.shields.io/npm/v/typescript?style=for-the-badge&label=typescript&color=3178C6)](https://www.npmjs.com/package/typescript) - TypeScript language  
+[![typescript-eslint](https://img.shields.io/npm/v/typescript-eslint?style=for-the-badge&label=typescript-eslint&color=3178C6)](https://www.npmjs.com/package/typescript-eslint) - Monorepo for TypeScript ESLint tooling  
+[![vite](https://img.shields.io/npm/v/vite?style=for-the-badge&label=vite&color=646CFF)](https://www.npmjs.com/package/vite) - Next generation frontend build tool  
+
+</details>
+
+### Backend Dependencies
+
+<details>
+<summary><b>Python Dependencies</b></summary>
+
+[![fastapi](https://img.shields.io/pypi/v/fastapi?style=for-the-badge&label=fastapi&color=009688)](https://pypi.org/project/fastapi/) - Modern, fast web framework for building APIs  
+[![uvicorn](https://img.shields.io/pypi/v/uvicorn?style=for-the-badge&label=uvicorn&color=2094F3)](https://pypi.org/project/uvicorn/) - Lightning-fast ASGI server  
+[![motor](https://img.shields.io/pypi/v/motor?style=for-the-badge&label=motor&color=13AA52)](https://pypi.org/project/motor/) - Async MongoDB driver for Python  
+[![python-jose](https://img.shields.io/pypi/v/python-jose?style=for-the-badge&label=python-jose&color=3776AB)](https://pypi.org/project/python-jose/) - JOSE implementation in Python for JWT  
+[![bcrypt](https://img.shields.io/pypi/v/bcrypt?style=for-the-badge&label=bcrypt&color=3776AB)](https://pypi.org/project/bcrypt/) - Modern password hashing library  
+[![pydantic](https://img.shields.io/pypi/v/pydantic?style=for-the-badge&label=pydantic&color=E92063)](https://pypi.org/project/pydantic/) - Data validation using Python type hints  
+[![pydantic-settings](https://img.shields.io/pypi/v/pydantic-settings?style=for-the-badge&label=pydantic-settings&color=E92063)](https://pypi.org/project/pydantic-settings/) - Settings management using Pydantic  
+[![psutil](https://img.shields.io/pypi/v/psutil?style=for-the-badge&label=psutil&color=3776AB)](https://pypi.org/project/psutil/) - Cross-platform library for system and process utilities  
+[![python-multipart](https://img.shields.io/pypi/v/python-multipart?style=for-the-badge&label=python-multipart&color=3776AB)](https://pypi.org/project/python-multipart/) - Multipart form data parser  
+[![websockets](https://img.shields.io/pypi/v/websockets?style=for-the-badge&label=websockets&color=3776AB)](https://pypi.org/project/websockets/) - WebSocket implementation  
+[![pytest](https://img.shields.io/pypi/v/pytest?style=for-the-badge&label=pytest&color=0A9EDC)](https://pypi.org/project/pytest/) - Testing framework  
+[![pytest-asyncio](https://img.shields.io/pypi/v/pytest-asyncio?style=for-the-badge&label=pytest-asyncio&color=0A9EDC)](https://pypi.org/project/pytest-asyncio/) - Pytest support for asyncio  
+[![httpx](https://img.shields.io/pypi/v/httpx?style=for-the-badge&label=httpx&color=3776AB)](https://pypi.org/project/httpx/) - HTTP client for Python  
+
+</details>
+
+---
+
+## 🚀 Installation
 
 ### Prerequisites
-- Node.js 18+
-- Python 3.11+
-- MongoDB 6+
-- Docker (optional)
+
+- **Node.js** 18+
+- **Python** 3.11+
+- **MongoDB** 6+
+- **Docker** (optional)
 
 ### Option 1: Docker Compose (Recommended)
 
 ```bash
 # Clone the repository
-git clone https://github.com/your-repo/webos.git
-cd webos
+git clone https://github.com/H0NEYP0T-466/webOS-processMGR.git
+cd webOS-processMGR
 
 # Start all services
 cd docker
@@ -103,6 +221,7 @@ docker-compose up -d
 ### Option 2: Manual Setup
 
 **Important:** Before starting, create a `.env` file in the project root:
+
 ```bash
 # Copy the example file
 cp .env.example .env
@@ -113,7 +232,7 @@ cp .env.example .env
 # (plus other backend configuration)
 ```
 
-#### Backend
+#### Backend Setup
 
 ```bash
 # Navigate to backend
@@ -136,7 +255,7 @@ export ADMIN_PASS=admin123
 uvicorn app.main:app --host 0.0.0.0 --port 8888 --reload
 ```
 
-#### Frontend
+#### Frontend Setup
 
 ```bash
 # Install dependencies
@@ -151,29 +270,73 @@ npm install
 npm run dev
 ```
 
-## Environment Variables
+---
 
-### Backend (.env)
+## ⚡ Usage
 
-| Variable | Description | Default |
-|----------|-------------|---------|
-| `MONGO_URI` | MongoDB connection string | `mongodb://localhost:27017` |
-| `MONGO_DB_NAME` | Database name | `webos` |
-| `JWT_SECRET` | JWT signing secret | (required) |
-| `JWT_EXPIRE_MINUTES` | Token expiration time | `1440` (24h) |
-| `ADMIN_USER` | Initial admin username | `admin` |
-| `ADMIN_PASS` | Initial admin password | `admin123` |
-| `CORS_ORIGINS` | Allowed CORS origins | `http://localhost:5173` |
-| `LOG_LEVEL` | Logging level | `INFO` |
+### Accessing the Application
 
-### Frontend (.env)
+1. Open your browser and navigate to `http://localhost:5173` (or the port shown by Vite)
+2. You'll see the boot sequence
+3. Login with credentials (default admin: `admin` / `admin123`)
+4. Explore the desktop environment with various apps
 
-| Variable | Description | Default |
-|----------|-------------|---------|
-| `VITE_API_URL` | Backend API URL | `http://localhost:8888` |
-| `VITE_WS_URL` | WebSocket URL | `ws://localhost:8888/ws` |
+### Key Features to Try
 
-## API Reference
+- **File Manager**: Create folders and files, edit text documents
+- **Task Manager**: Monitor virtual and host processes
+- **Settings**: Configure system preferences
+
+### API Documentation
+
+Access interactive API documentation at `http://localhost:8888/docs`
+
+---
+
+## 📂 Folder Structure
+
+```
+webOS-processMGR/
+├── src/                      # Frontend source
+│   ├── apps/                 # Application components
+│   │   ├── FileManager/
+│   │   ├── TaskManager/
+│   │   ├── Editor/
+│   │   └── Settings/
+│   ├── os/                   # OS components
+│   │   ├── Boot/
+│   │   ├── Login/
+│   │   ├── Desktop/
+│   │   └── WindowManager/
+│   ├── services/             # API and WebSocket clients
+│   ├── state/                # Zustand store
+│   └── types/                # TypeScript types
+├── backend/                  # Backend source
+│   └── app/
+│       ├── auth/             # Authentication module
+│       ├── files/            # File system module
+│       ├── desktop/          # Desktop state module
+│       ├── vproc/            # Virtual processes module
+│       ├── hproc/            # Host processes module
+│       ├── ws/               # WebSocket module
+│       └── tests/            # Backend tests
+├── docker/                   # Docker configuration
+├── public/                   # Static assets
+├── docs/                     # Documentation
+├── .github/                  # GitHub templates and workflows
+├── .env.example              # Environment template
+├── package.json              # Frontend dependencies
+├── requirements.txt          # Backend dependencies (in backend/)
+├── CONTRIBUTING.md           # Contributing guidelines
+├── SECURITY.md               # Security policy
+├── CODE_OF_CONDUCT.md        # Code of conduct
+├── LICENSE                   # MIT License
+└── README.md                 # This file
+```
+
+---
+
+## 📡 API Reference
 
 ### Authentication
 
@@ -227,39 +390,9 @@ Connect to `/ws?token=<jwt_token>` for real-time updates.
 - `vproc.events` - Virtual process lifecycle events
 - `fs.events` - File system changes
 
-## Project Structure
+---
 
-```
-webos/
-├── src/                      # Frontend source
-│   ├── apps/                 # Application components
-│   │   ├── FileManager/
-│   │   ├── TaskManager/
-│   │   ├── Editor/
-│   │   └── Settings/
-│   ├── os/                   # OS components
-│   │   ├── Boot/
-│   │   ├── Login/
-│   │   ├── Desktop/
-│   │   └── WindowManager/
-│   ├── services/             # API and WebSocket clients
-│   ├── state/                # Zustand store
-│   └── types/                # TypeScript types
-├── backend/                  # Backend source
-│   └── app/
-│       ├── auth/             # Authentication module
-│       ├── files/            # File system module
-│       ├── desktop/          # Desktop state module
-│       ├── vproc/            # Virtual processes module
-│       ├── hproc/            # Host processes module
-│       ├── ws/               # WebSocket module
-│       └── tests/            # Backend tests
-├── docker/                   # Docker configuration
-├── .env.example              # Environment template
-└── README.md
-```
-
-## Architecture
+## 🏗 Architecture
 
 ### Components
 
@@ -310,7 +443,9 @@ webos/
 - **Virtual Processes**: Created on app open, tracked in database, cleaned up on app close
 - **Host Processes**: Read-only monitoring, admin-only termination with safety guards
 
-## Development
+---
+
+## 💻 Development
 
 ### Running Tests
 
@@ -342,7 +477,9 @@ The project uses:
 - **pytest** for Python testing
 - **GitHub Actions CI** for automated testing on PR/push
 
-## Troubleshooting
+---
+
+## 🔧 Troubleshooting
 
 ### Common Issues
 
@@ -361,7 +498,9 @@ The project uses:
 **CORS Errors**
 - Update `CORS_ORIGINS` in backend `.env` to include your frontend URL
 
-## Security Considerations
+---
+
+## 🔒 Security Considerations
 
 - Change `JWT_SECRET` in production
 - Use HTTPS in production
@@ -371,16 +510,35 @@ The project uses:
 
 See [SECURITY.md](SECURITY.md) for more details.
 
-## License
+---
 
-MIT
+## 🤝 Contributing
 
-## Contributing
+We welcome contributions! Please see our [Contributing Guidelines](CONTRIBUTING.md) for details on:
 
-See [CONTRIBUTING.md](CONTRIBUTING.md) for guidelines.
+- Setting up your development environment
+- Code style and standards
+- Submitting pull requests
+- Reporting issues
 
 1. Fork the repository
 2. Create a feature branch
 3. Make your changes
 4. Run tests
 5. Submit a pull request
+
+---
+
+## 📏 Code of Conduct
+
+This project adheres to the Contributor Covenant [Code of Conduct](CODE_OF_CONDUCT.md). By participating, you are expected to uphold this code. Please report unacceptable behavior to the project maintainers.
+
+---
+
+## 📜 License
+
+This project is licensed under the MIT License - see the [LICENSE](LICENSE) file for details.
+
+---
+
+<p align="center">Made with ❤️ by <a href="https://github.com/H0NEYP0T-466">H0NEYP0T-466</a></p>
