@@ -124,7 +124,7 @@ cd docker && docker-compose up -d
 
 ### For Users
 
-**Try the live demo**: **<a href="https://web-os-process-mgr.vercel.app">https://web-os-process-mgr.vercel.app</a>**
+**Try the live demo**: **[https://web-os-process-mgr.vercel.app](https://web-os-process-mgr.vercel.app)**
 
 No installation needed! Just open the link and experience the full webOS environment.
 
@@ -310,8 +310,6 @@ The architecture diagram is already included in the Architecture section ✅
 </details>
 
 ---
-
-## 🔧 Detailed Installation
 
 ## 🚀 Installation
 
