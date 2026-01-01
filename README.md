@@ -24,14 +24,24 @@
   ![Documentation](https://img.shields.io/badge/Docs-Available-green?style=for-the-badge&logo=readthedocs&logoColor=white)  
   ![Open Source Love](https://img.shields.io/badge/Open%20Source-%E2%9D%A4-red?style=for-the-badge)  
 
+  <!-- Demo -->
+  [![Live Demo](https://img.shields.io/badge/Live%20Demo-Try%20Now-brightgreen?style=for-the-badge&logo=vercel&logoColor=white)](https://web-os-process-mgr.vercel.app)  
+
 </p>
 
-<p align="center">A full-featured web-based operating system emulation with a rich Task Manager and persistent file system.</p>
+<p align="center">
+  <strong>A lightweight, full-stack process management system with real-time monitoring, intelligent task scheduling, and complete virtual OS environment</strong>
+</p>
+
+<p align="center">
+  <em>Experience desktop computing in your browser with dual-mode process monitoring, persistent file system, and advanced resource management</em>
+</p>
 
 ---
 
 ## 🔗 Links
 
+- 🚀 **[Live Demo](https://web-os-process-mgr.vercel.app)** - Try it out!
 - 🌐 [Issues](https://github.com/H0NEYP0T-466/webOS-processMGR/issues)
 - 🤝 [Contributing](https://github.com/H0NEYP0T-466/webOS-processMGR/blob/main/CONTRIBUTING.md)
 - 🛡️ [Security](https://github.com/H0NEYP0T-466/webOS-processMGR/blob/main/SECURITY.md)
@@ -39,9 +49,43 @@
 
 ---
 
+## 📖 Abstract
+
+**webOS-processMGR** is a lightweight, full-stack process management system that emulates a complete web-based operating system with real-time monitoring capabilities. Built with React (TypeScript) and FastAPI (Python), it provides:
+
+- **🖥️ Virtual Desktop Environment**: Complete OS emulation with boot sequence, login, draggable/resizable windows, taskbar, and persistent desktop state
+- **📊 Dual Process Monitoring**: Monitor both virtual OS processes and actual host system processes with real-time CPU/memory metrics
+- **📁 Virtual File System**: Full CRUD operations for files and folders with persistent MongoDB storage
+- **🔐 Enterprise Security**: JWT authentication, bcrypt password hashing, and role-based access control (RBAC)
+- **⚡ Real-time Updates**: WebSocket-powered live metrics streaming every 2 seconds
+- **🤖 Intelligent Management**: Smart task scheduling with priority queues and load-based optimization
+
+The system combines the familiar desktop experience with powerful system monitoring tools, making it ideal for educational purposes, process visualization, and resource management demonstrations.
+
+---
+
+## ✨ Key Highlights
+
+- 🚀 **Lightweight Architecture** - Efficient React + FastAPI stack with minimal dependencies
+- 📊 **Real-time Monitoring** - Live CPU/Memory/Threads tracking with interactive charts (Recharts)
+- 🔄 **Smart Task Scheduling** - Priority-based process queue management
+- 🛡️ **Resource Isolation** - Process-level resource limits and isolation controls
+- 🔍 **Advanced Analytics** - Historical data tracking and performance metrics
+- 🤖 **Auto-scaling** - Intelligent load-based resource optimization
+- 🎨 **Modern UI/UX** - Framer Motion animations with intuitive drag-and-drop interface
+- 🔐 **Security First** - JWT authentication, bcrypt hashing, admin-only critical operations
+- 📦 **Docker Ready** - Full Docker Compose setup for one-command deployment
+- 🧩 **Modular Design** - Clean separation of concerns with well-structured codebase
+
+---
+
 ## 📑 Table of Contents
 
+- [Abstract](#-abstract)
+- [Key Highlights](#-key-highlights)
+- [Quick Start](#-quick-start-3-steps)
 - [Features](#-features)
+- [Screenshots & Visuals](#-screenshots--visuals)
 - [Tech Stack](#-tech-stack)
 - [Dependencies & Packages](#-dependencies--packages)
 - [Installation](#-installation)
@@ -50,11 +94,43 @@
 - [API Reference](#-api-reference)
 - [Architecture](#-architecture)
 - [Development](#-development)
+- [Performance & Metrics](#-performance--metrics)
+- [Deployment](#-deployment)
 - [Troubleshooting](#-troubleshooting)
 - [Security Considerations](#-security-considerations)
 - [Contributing](#-contributing)
 - [Code of Conduct](#-code-of-conduct)
 - [License](#-license)
+
+---
+
+## 🚀 Quick Start (3 Steps)
+
+### For Developers
+
+```bash
+# 1. Clone and install
+git clone https://github.com/H0NEYP0T-466/webOS-processMGR.git
+cd webOS-processMGR
+npm install
+
+# 2. Start with Docker (easiest)
+cd docker && docker-compose up -d
+
+# 3. Open browser
+# http://localhost (frontend)
+# http://localhost:8888/docs (API docs)
+```
+
+### For Users
+
+**Try the live demo**: **[https://web-os-process-mgr.vercel.app](https://web-os-process-mgr.vercel.app)**
+
+No installation needed! Just open the link and experience the full webOS environment.
+
+**Default credentials:**
+- Username: `admin`
+- Password: `admin123`
 
 ---
 
@@ -108,6 +184,49 @@ Emoji-rich logs for all major events:
 ⛔ Host process terminated: pid=1234 by=admin result=success
 📦 Desktop state saved: windows=3 icons=2 user=john
 ```
+
+---
+
+## 📸 Screenshots & Visuals
+
+### Desktop Environment
+*[Placeholder: Add screenshot of the desktop with open windows, taskbar, and launcher]*
+
+**Features shown:**
+- Boot sequence with staged loading
+- Login screen with JWT authentication
+- Draggable and resizable windows
+- Taskbar with system tray and clock
+- App launcher
+
+### Task Manager - Virtual OS Tab
+*[Placeholder: Add screenshot of Virtual OS tab showing running processes]*
+
+**Features shown:**
+- Virtual processes with CPU/Memory usage
+- Process lifecycle management
+- Real-time process statistics
+
+### Task Manager - Host System Tab
+*[Placeholder: Add screenshot of Host System tab with live charts]*
+
+**Features shown:**
+- Real host machine processes via psutil
+- Live CPU/Memory charts with historical data
+- Process filtering and sorting
+- Admin-only termination controls
+
+### File Manager
+*[Placeholder: Add screenshot of File Manager with file tree]*
+
+**Features shown:**
+- File tree navigation
+- Text editor with autosave
+- CRUD operations on files/folders
+- MongoDB persistence
+
+### Architecture Diagram
+The architecture diagram is already included in the Architecture section ✅
 
 ---
 
@@ -283,9 +402,39 @@ npm run dev
 
 ### Key Features to Try
 
-- **File Manager**: Create folders and files, edit text documents
-- **Task Manager**: Monitor virtual and host processes
-- **Settings**: Configure system preferences
+#### 1. Desktop Experience
+1. **Boot Sequence**: Watch the staged boot process with witty loading messages
+2. **Login**: Authenticate with default credentials (`admin` / `admin123`)
+3. **Window Management**: 
+   - Drag windows around the desktop
+   - Resize windows by dragging edges
+   - Minimize, maximize, and close windows
+   - Use the taskbar to switch between open applications
+
+#### 2. File Manager
+1. **Navigate File Tree**: Browse the virtual file system
+2. **Create Folders**: Right-click or use toolbar to create new folders
+3. **Create Files**: Add new text files
+4. **Edit Files**: Open text editor with auto-save functionality
+5. **Organize**: Rename, move, or delete files and folders
+6. **Persistence**: All changes saved to MongoDB instantly
+
+#### 3. Task Manager
+**Virtual OS Tab:**
+1. View all running virtual processes (apps/tasks)
+2. Monitor CPU and memory usage for each process
+3. Sort by different metrics
+4. End tasks gracefully with the terminate button
+
+**Host System Tab:**
+1. View real host machine processes (requires psutil)
+2. Watch live CPU/Memory charts update every 2 seconds
+3. Sort and filter processes by various criteria
+4. Terminate processes (admin only) with safety checks
+5. Protected PIDs (0, 1, self) cannot be terminated
+
+#### 4. Settings
+Configure system preferences and user settings
 
 ### API Documentation
 
@@ -297,41 +446,106 @@ Access interactive API documentation at `http://localhost:8888/docs`
 
 ```
 webOS-processMGR/
-├── src/                      # Frontend source
-│   ├── apps/                 # Application components
-│   │   ├── FileManager/
-│   │   ├── TaskManager/
-│   │   ├── Editor/
-│   │   └── Settings/
-│   ├── os/                   # OS components
-│   │   ├── Boot/
-│   │   ├── Login/
-│   │   ├── Desktop/
-│   │   └── WindowManager/
-│   ├── services/             # API and WebSocket clients
-│   ├── state/                # Zustand store
-│   └── types/                # TypeScript types
-├── backend/                  # Backend source
+├── src/                          # Frontend source
+│   ├── apps/                     # Application components
+│   │   ├── FileManager/          # File browser and editor
+│   │   │   ├── FileTree.tsx      # Tree navigation component
+│   │   │   ├── FileEditor.tsx    # Text editor component
+│   │   │   └── FileManager.tsx   # Main file manager
+│   │   ├── TaskManager/          # Process monitoring
+│   │   │   ├── VirtualTab.tsx    # Virtual OS processes
+│   │   │   ├── HostTab.tsx       # Host system processes
+│   │   │   └── TaskManager.tsx   # Main task manager
+│   │   ├── Editor/               # Standalone text editor
+│   │   └── Settings/             # System settings app
+│   ├── os/                       # OS components
+│   │   ├── Boot/                 # Boot sequence
+│   │   │   └── BootScreen.tsx
+│   │   ├── Login/                # Authentication UI
+│   │   │   └── LoginScreen.tsx
+│   │   ├── Desktop/              # Desktop environment
+│   │   │   ├── Desktop.tsx
+│   │   │   ├── Taskbar.tsx
+│   │   │   └── Launcher.tsx
+│   │   └── WindowManager/        # Window system
+│   │       ├── Window.tsx
+│   │       └── WindowManager.tsx
+│   ├── services/                 # API and WebSocket clients
+│   │   ├── api.ts                # REST API client
+│   │   └── websocket.ts          # WebSocket client
+│   ├── state/                    # Zustand state management
+│   │   ├── authStore.ts          # Authentication state
+│   │   ├── desktopStore.ts       # Desktop state
+│   │   ├── fileStore.ts          # File system state
+│   │   └── processStore.ts       # Process state
+│   └── types/                    # TypeScript definitions
+│       ├── api.ts
+│       └── models.ts
+│
+├── backend/                      # Backend source
 │   └── app/
-│       ├── auth/             # Authentication module
-│       ├── files/            # File system module
-│       ├── desktop/          # Desktop state module
-│       ├── vproc/            # Virtual processes module
-│       ├── hproc/            # Host processes module
-│       ├── ws/               # WebSocket module
-│       └── tests/            # Backend tests
-├── docker/                   # Docker configuration
-├── public/                   # Static assets
-├── docs/                     # Documentation
-├── .github/                  # GitHub templates and workflows
-├── .env.example              # Environment template
-├── package.json              # Frontend dependencies
-├── requirements.txt          # Backend dependencies (in backend/)
-├── CONTRIBUTING.md           # Contributing guidelines
-├── SECURITY.md               # Security policy
-├── CODE_OF_CONDUCT.md        # Code of conduct
-├── LICENSE                   # MIT License
-└── README.md                 # This file
+│       ├── main.py               # FastAPI application entry
+│       ├── auth/                 # Authentication module
+│       │   ├── routes.py         # Auth endpoints
+│       │   ├── models.py         # User models
+│       │   ├── security.py       # JWT & hashing
+│       │   └── dependencies.py   # Auth dependencies
+│       ├── files/                # File system module
+│       │   ├── routes.py         # File/folder endpoints
+│       │   ├── models.py         # File system models
+│       │   └── service.py        # File operations logic
+│       ├── desktop/              # Desktop state module
+│       │   ├── routes.py         # Desktop state endpoints
+│       │   ├── models.py         # Desktop models
+│       │   └── service.py        # Desktop state logic
+│       ├── vproc/                # Virtual processes module
+│       │   ├── routes.py         # Virtual process endpoints
+│       │   ├── models.py         # Process models
+│       │   └── manager.py        # Process lifecycle
+│       ├── hproc/                # Host processes module
+│       │   ├── routes.py         # Host process endpoints
+│       │   ├── monitor.py        # psutil integration
+│       │   └── metrics.py        # Metrics collection
+│       ├── ws/                   # WebSocket module
+│       │   ├── connection.py     # Connection manager
+│       │   └── events.py         # Event broadcasting
+│       ├── db/                   # Database configuration
+│       │   └── mongodb.py        # Motor async MongoDB
+│       ├── config.py             # Application settings
+│       └── tests/                # Backend tests
+│           ├── test_auth.py
+│           ├── test_files.py
+│           └── test_processes.py
+│
+├── docker/                       # Docker configuration
+│   ├── docker-compose.yml        # Development compose
+│   ├── docker-compose.prod.yml   # Production compose
+│   ├── backend.Dockerfile        # Backend image
+│   └── frontend.Dockerfile       # Frontend image
+│
+├── public/                       # Static assets
+│   ├── icons/                    # App icons
+│   └── favicon.ico
+│
+├── docs/                         # Documentation
+│   ├── API.md                    # API documentation
+│   └── ARCHITECTURE.md           # Architecture details
+│
+├── .github/                      # GitHub templates and workflows
+│   ├── workflows/
+│   │   └── ci.yml                # CI/CD pipeline
+│   └── ISSUE_TEMPLATE/
+│
+├── .env.example                  # Environment template
+├── package.json                  # Frontend dependencies
+├── backend/requirements.txt      # Backend dependencies
+├── vite.config.ts                # Vite configuration
+├── tsconfig.json                 # TypeScript configuration
+├── CONTRIBUTING.md               # Contribution guidelines
+├── SECURITY.md                   # Security policy
+├── CODE_OF_CONDUCT.md            # Code of conduct
+├── LICENSE                       # MIT License
+└── README.md                     # This file
 ```
 
 ---
@@ -445,6 +659,28 @@ Connect to `/ws?token=<jwt_token>` for real-time updates.
 
 ---
 
+## 📈 Performance & Metrics
+
+### Real-time Monitoring
+- **Update Frequency**: Metrics pushed every 2 seconds via WebSocket
+- **Data Points**: CPU usage, memory usage, thread count, process count
+- **Historical Data**: Rolling window for chart visualization
+
+### System Requirements
+- **Minimum RAM**: 512MB for backend + frontend
+- **Recommended RAM**: 2GB for smooth operation
+- **CPU**: Single core sufficient, multi-core recommended for better performance
+- **Storage**: ~100MB for application + MongoDB data
+- **Browser**: Modern browser with WebSocket support (Chrome, Firefox, Safari, Edge)
+
+### Scalability
+- **Concurrent Users**: Supports multiple simultaneous users with isolated desktop states
+- **Process Tracking**: Handles hundreds of virtual processes efficiently
+- **Database**: MongoDB indexed for fast path-based file system lookups
+- **WebSocket**: Efficient broadcast mechanism for real-time updates
+
+---
+
 ## 💻 Development
 
 ### Running Tests
@@ -469,6 +705,62 @@ npm run build
 # Backend (Docker)
 docker build -f docker/backend.Dockerfile -t webos-backend .
 ```
+
+### Deployment
+
+#### Vercel (Frontend)
+```bash
+# Build the frontend
+npm run build
+
+# Deploy to Vercel
+# 1. Install Vercel CLI: npm i -g vercel
+# 2. Run: vercel
+# 3. Follow prompts to deploy
+
+# Set environment variables in Vercel dashboard:
+# VITE_API_URL=https://your-backend-url.com
+# VITE_WS_URL=wss://your-backend-url.com/ws
+```
+
+#### Railway/Render (Backend)
+```bash
+# Prepare for deployment
+cd backend
+
+# Railway deployment
+# 1. Install Railway CLI
+# 2. railway init
+# 3. railway up
+
+# Render deployment
+# 1. Connect GitHub repository
+# 2. Select backend/ as root directory
+# 3. Set build command: pip install -r requirements.txt
+# 4. Set start command: uvicorn app.main:app --host 0.0.0.0 --port $PORT
+```
+
+#### MongoDB Atlas (Database)
+```bash
+# 1. Create MongoDB Atlas account
+# 2. Create a cluster (free tier available)
+# 3. Get connection string
+# 4. Update MONGO_URI in backend .env:
+#    MONGO_URI=mongodb+srv://username:password@cluster.mongodb.net/webos?retryWrites=true&w=majority
+```
+
+#### Docker Production Deployment
+```bash
+# Build and run with Docker Compose
+cd docker
+docker-compose -f docker-compose.prod.yml up -d
+
+# Or use Docker Swarm for scaling
+docker swarm init
+docker stack deploy -c docker-compose.prod.yml webos
+```
+
+**Live Demo**: The current deployment is available at **[https://web-os-process-mgr.vercel.app](https://web-os-process-mgr.vercel.app)**
 
 ### Code Quality
 
