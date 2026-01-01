@@ -187,48 +187,7 @@ Emoji-rich logs for all major events:
 
 ---
 
-## 📸 Screenshots & Visuals
 
-### Desktop Environment
-*[Placeholder: Add screenshot of the desktop with open windows, taskbar, and launcher]*
-
-**Features shown:**
-- Boot sequence with staged loading
-- Login screen with JWT authentication
-- Draggable and resizable windows
-- Taskbar with system tray and clock
-- App launcher
-
-### Task Manager - Virtual OS Tab
-*[Placeholder: Add screenshot of Virtual OS tab showing running processes]*
-
-**Features shown:**
-- Virtual processes with CPU/Memory usage
-- Process lifecycle management
-- Real-time process statistics
-
-### Task Manager - Host System Tab
-*[Placeholder: Add screenshot of Host System tab with live charts]*
-
-**Features shown:**
-- Real host machine processes via psutil
-- Live CPU/Memory charts with historical data
-- Process filtering and sorting
-- Admin-only termination controls
-
-### File Manager
-*[Placeholder: Add screenshot of File Manager with file tree]*
-
-**Features shown:**
-- File tree navigation
-- Text editor with autosave
-- CRUD operations on files/folders
-- MongoDB persistence
-
-### Architecture Diagram
-The architecture diagram is already included in the Architecture section ✅
-
----
 
 ## 🛠 Tech Stack
 
